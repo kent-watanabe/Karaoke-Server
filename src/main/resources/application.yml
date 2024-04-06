@@ -1,0 +1,46 @@
+karaoke:
+  basePathToAssets: w:/
+
+spring:
+  application:
+    name: "karaokeServer"
+  data:
+    mongodb:
+      karaoke:
+        uri: mongodb://pi5.local:27017/karaoke
+      auth:
+        uri: mongodb://pi5.local:27017/auth
+  web:
+    resources:
+      static-locations: file:Player
+  kafka:
+    bootstrap-servers: pi5.local:9092
+    consumer:
+      group-id: karaoke-server
+      auto-offset-reset: earliest
+    template:
+      default-topic: karaoke
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+server:
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain,application/javascript,text/css
+  port: 8081
+  ssl:
+    key-store: keystore.p12
+    key-store-password: cas10calc
+    key-store-type: pkcs12
+  servlet:
+    context-path: /
+logging:
+  level:
+    org:
+      springframework:
+        data:
+          mongodb:
+            core:
+              MongoTemplate: DEBUG
