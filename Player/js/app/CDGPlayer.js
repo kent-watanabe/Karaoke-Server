@@ -1,4 +1,4 @@
-define(['CDGraphics'], function (CDGraphics) {
+define(['CDGraphics','./mediaControls.js'], function (CDGraphics,MediaControls) {
   return class CDGPlayer {
     constructor(props) {
       if (props == null) {
@@ -25,67 +25,44 @@ define(['CDGraphics'], function (CDGraphics) {
       this.containerID = containerID;
       this.getID = helper.getID.bind(this);
       this.getJquerySelector = helper.getJquerySelector.bind(this);
+      this.pitchShift = new Tone.PitchShift({
+        pitch: 0,
+      }).toDestination();
+      this.player = new Tone.Player();
+      this.player.connect(this.pitchShift);
 
       this.cdGraphics = new CDGraphics();
       var canvasTag = "<canvas width='"+ this.width +"' height='"+ this.height +"'>";
-      var canvas = helper.createDOMObject(canvasTag, containerID + "-canvas", "cdgCanvas");
-      var audio = helper.createDOMObject('<audio audioplay>', containerID + "-audio", "cdgAudio");
-      var audioContainer = helper.createDOMObject('<div>', containerID + "-audio-container", "audioContainer");
-      let controlsWrapper = helper.createDOMObject('<div>', containerID + "-controls-wrapper", "controlsWrapper");
-      audioContainer.append(controlsWrapper[0]);
-      let audioWrapper = helper.createDOMObject('<div>', containerID + "-audio-wrapper", "audioWrapper");
-      audioWrapper.append(audio);
-      controlsWrapper.append(audioWrapper[0]);
-      let buttonWrapper = helper.createDOMObject('<div>', containerID + "-button-wrapper", "buttonWrapper");
-      controlsWrapper.append(buttonWrapper[0]);
-      var nextButton = helper.createDOMObject('<button class="mdiButton mdi-skip-next" title="Next Track">', containerID + "-next-button", "nextButton");
-      var octaveUp = helper.createDOMObject('<button class="mdiButton mdi-music-note-plus" title="Octave Up">', containerID + "-octave-up", "octaveUp");
-      var octaveDown = helper.createDOMObject('<button class="mdiButton mdi-music-note-minus" title="Octave Down">', containerID + "-octave-down", "octaveDown");
-      var microphone = helper.createDOMObject('<button class="mdiButton mdi-microphone" title="Microphone">', containerID + "-microphone", "microphone");
-      buttonWrapper.append(nextButton[0]);
-      buttonWrapper.append(octaveUp[0]);
-      buttonWrapper.append(octaveDown[0]);
-      buttonWrapper.append(microphone[0]);
-
-      nextButton.on('click', this.nextTrackFn.bind(this));
-      microphone.on('click', (event)=>this.fireEvent('microphone_clicked'));
-      octaveUp.on('click', (event)=>this.fireEvent('octaveUp'));
-      octaveDown.on('click', (event)=>this.fireEvent('octaveDown'));
-
-      if (this.showControls) {
-        audio.attr('controls', '');
-      }
-
+      var canvas = $(canvasTag);
+      this.mediaControls = new MediaControls();
       container.append(canvas[0]);
-      container.append(audioContainer[0]);
-      this.frameId = 0;
+      container.append(this.mediaControls.container);
+      this.mediaControls.getControl('#next-button').on('click', this.nextTrackFn.bind(this));
+      this.mediaControls.container.on('pitch_changed', (e, pitch)=>this.pitchShift.pitch = pitch);
+      this.mediaControls.container.on('volume_changed', (e, volume)=>{
+        this.player.volume.value = volume;
+      });
+      this.mediaControls.container.on('play_clicked', (event, state)=>this.handlePlayPause(state));
 
-      // follow audio events (depending on your app, not all are strictly necessary)
-      audio.on('play', this.playHandler.bind(this));
-      audio.on('pause', this.pauseHandler.bind(this));
-      audio.on('ended', this.nextTrackFn.bind(this));
-      audio.on('seeked', this.renderHandler(audio[0].currentTime));
+      this.frameId = 0;
+      this.mediaControls.setVolume(Tone.Destination.volume.value);
+
+      Tone.Transport.on('start',this.transportPlayHandler.bind(this));
+      Tone.Transport.on('pause',this.transportPauseHandler.bind(this));
+
 
       this.setDimensions(this.width, this.height);
       this.ctx = canvas[0].getContext('2d');
       this.clearCanvas();
     }
 
-    setOctaveIncrement(inc) {
-      this.getAudio(true).playbackRate = this.getAudio(true).playbackRate * inc;
-    }
-
-    setMicrophoneStatus(status) {
-      var microphoneBtn = $(this.container).find(this.getJquerySelector('microphone'));
-      if(!status)
-      {
-        microphoneBtn.addClass('mdi-microphone-off');
-        microphoneBtn.removeClass('mdi-microphone');
+    handlePlayPause(state)
+    {
+      if(state === 'paused') {
+        Tone.Transport.start();
       }
-      else
-      {
-        microphoneBtn.addClass('mdi-microphone');
-        microphoneBtn.removeClass('mdi-microphone-off');
+      else {
+        Tone.Transport.pause();
       }
     }
 
@@ -94,6 +71,7 @@ define(['CDGraphics'], function (CDGraphics) {
     }
 
     nextTrackFn() {
+      Tone.Transport.stop();
       this.fireEvent('nextTrack');
     }
 
@@ -107,14 +85,17 @@ define(['CDGraphics'], function (CDGraphics) {
       }
     }
 
-    getAudio(returnEl) {
-      var container = $(this.container);
-      if(!returnEl) {
-        return container.find('audio');
-      }
-      else {
-        return container.find('audio')[0];
-      }
+    drawBitmapOnCanvas(bitmap) {
+      var canvas = this.getCanvas(true);
+      this.ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight)
+      this.ctx.imageSmoothingEnabled = true;
+      this.ctx.drawImage(bitmap, 0, 0, canvas.clientWidth,canvas.clientHeight);
+    }
+
+    clearCanvas() {
+      var canvas = this.getCanvas(true);
+      this.ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
+      this.ctx.drawImage(this.logo, 0, 0, canvas.clientWidth,canvas.clientHeight);
     }
 
     renderHandler(time) {
@@ -131,40 +112,18 @@ define(['CDGraphics'], function (CDGraphics) {
       createImageBitmap(frame.imageData).then(this.drawBitmapOnCanvas.bind(this));
     }
 
-    drawBitmapOnCanvas(bitmap) {
-      var canvas = this.getCanvas(true);
-      this.ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight)
-      this.ctx.imageSmoothingEnabled = true;
-      this.ctx.drawImage(bitmap, 0, 0, canvas.clientWidth,canvas.clientHeight);
+    transportPlayHandler() {
+      if(Tone.Transport.seconds > this.player.buffer.duration) {
+        this.nextTrackFn();
+        return;
+      }
+      this.frameId = requestAnimationFrame(this.transportPlayHandler.bind(this));
+      this.mediaControls.setTime(new Date(Tone.Transport.seconds*1000));
+      this.renderHandler(Tone.Transport.seconds);
     }
 
-    clearCanvas() {
-      var canvas = this.getCanvas(true);
-      this.ctx.clearRect(0, 0, canvas.clientWidth, canvas.clientHeight);
-      this.ctx.drawImage(this.logo, 0, 0, canvas.clientWidth,canvas.clientHeight);
-    }
-
-    playHandler() {
-      this.frameId = requestAnimationFrame(this.playHandler.bind(this));
-      this.renderHandler(this.getAudio(true).currentTime);
-    }
-
-    pauseHandler() {
+    transportPauseHandler() {
       cancelAnimationFrame(this.frameId);
-    }
-
-    isReadyToPlay(resolve, reject){
-      const i=0;
-      var audio = this.getAudio(true);
-      if(audio.readyState != 4) {
-        setTimeout(function() {
-          this.isReadyToPlay(resolve, reject);
-        }.bind(this),100);
-      }
-      else
-      {
-        resolve();
-      }
     }
 
     play(id) {
@@ -172,58 +131,38 @@ define(['CDGraphics'], function (CDGraphics) {
       .then(response => response.arrayBuffer())
       .then(buffer => {
         this.cdGraphics.load(buffer);
-        this.getAudio(true).src = "/api/assets/id/" + id + ".mp3";
-        this.getAudio(true).play();
+        this.player.load("/api/assets/id/" + id + ".mp3",).then(()=>{
+          this.mediaControls.initTime(new Date(this.player.buffer.duration*1000));
+          this.player.sync().start();
+          Tone.Transport.start();
+        });
       });
     }
 
-
-
-    pause() {
-      this.getAudio(true).pause();
-    }
-
     stop() {
-      var audio = this.getAudio(true);
-      audio.pause();
-      audio.currentTime = 0;
       this.clearCanvas();
     }
 
-    setPlaybackRate(rate) {
-      this.getAudio(true).playbackRate = rate;
-    }
-
-    getPlaybackRate() {
-      return this.getAudio(true).playbackRate;
-    }
-
     setVolume(volume) {
-      this.getAudio(true).volume = volume;
+      this.player.volume.value = volume;
     }
 
     getVolume() {
-      return this.getAudio(true).volume;
+      return this.player.volume.value;
     }
 
     setDimensions(width, height) {
       var container = $(this.container);
       var canvas = container.find(this.getJquerySelector('canvas'));
-      var buttonWrapper = container.find(this.getJquerySelector('button-wrapper'));
-      var audio = this.getAudio();
-      audio.width(width-buttonWrapper.width());
       canvas.attr('width', width);
-      canvas.attr('height', height-audio.height());
+      canvas.attr('height', height-this.mediaControls.container.height());
     }
 
     restoreDimensions() {
       var container = $(this.container);
       var canvas = container.find(this.getJquerySelector('canvas'));
-      var buttonWrapper = container.find(this.getJquerySelector('button-wrapper'));
-      var audio = this.getAudio();
-      audio.width(this.width-buttonWrapper.width());
       canvas.attr('width', this.width);
-      canvas.attr('height', this.height-audio.height());
+      canvas.attr('height', this.height-this.mediaControls.container.height());
     }
   }
 });

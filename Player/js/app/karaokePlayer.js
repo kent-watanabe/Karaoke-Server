@@ -33,11 +33,8 @@ define(['./videoPlayer.js', './CDGPlayer.js'],
         }
 
         cdgContainer.on('microphone_clicked', this.microphoneFn.bind(this));
-        cdgContainer.on('octaveUp', this.octaveUpFn.bind(this));
-        cdgContainer.on('octaveDown', this.octaveDownFn.bind(this));
 
         this.isFullScreen = false;
-        this.octaveIncrement = 1.0594631;
 
         var playerProps = {
           width: initProps.width ? initProps.width : 600,
@@ -72,40 +69,28 @@ define(['./videoPlayer.js', './CDGPlayer.js'],
             this.exitedFullScreen();
           }
         });
-
-        this.microphoneAudio = new Audio();
-        this.microphoneAudio.autoplay = true;
-        this.microphoneEnabled = true;
-      }
-
-      octaveUpFn(event) {
-        this.microphoneAudio.playbackRate = this.microphoneAudio.playbackRate * this.octaveIncrement;
-      }
-
-      octaveDownFn(event) {
-        this.microphoneAudio.playbackRate = this.microphoneAudio.playbackRate * (1/this.octaveIncrement);
+        this.meter = new Tone.Meter();
+        this.mic = new Tone.UserMedia().connect(this.meter).toDestination();
+        this.mic.open().then(() => {
+          this.microphoneEnabled = true;
+        }).catch(e => {
+          console.error(e);
+          // promise is rejected when the user doesn't have or allow mic access
+          console.log("mic not open");
+        });
+        Tone.start();
       }
 
       microphoneFn(event) {
         if (!this.microphoneEnabled) {
-          this.microphoneAudio.play();
+          this.mic.mute = false;
           this.cdgPlayer.setMicrophoneStatus(true);
         } else {
-          this.microphoneAudio.pause();
+          this.mic.mute = true;
           this.cdgPlayer.setMicrophoneStatus(false);
         }
         this.microphoneEnabled = !this.microphoneEnabled;
         event.stopPropagation();
-      }
-
-      async getMedia(constraints) {
-        try {
-          this.stream = await navigator.mediaDevices.getUserMedia(constraints);
-          this.microphoneAudio.srcObject = this.stream;
-          return this.stream;
-        } catch (err) {
-          document.write(err)
-        }
       }
 
       fireEvent(event) {
@@ -176,19 +161,6 @@ define(['./videoPlayer.js', './CDGPlayer.js'],
         } else {
           this.cdgPlayer.stop();
         }
-      }
-
-      setPlaybackRate(rate) {
-        if (this.microphoneAudio) {
-          this.microphoneAudio.playbackRate = rate;
-        }
-      }
-
-      getPlaybackRate() {
-        if (this.microphoneAudio) {
-          return this.microphoneAudio.playbackRate;
-        }
-        return null;
       }
 
       setVolume(volume) {

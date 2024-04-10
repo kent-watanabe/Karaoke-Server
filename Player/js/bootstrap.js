@@ -1,8 +1,8 @@
 requirejs.config({
   baseUrl: 'js/lib',
   paths: {
-    app: '../browserApp'
+    app: '../bootstrap'
   }
 });
 
-requirejs(['../app/main']);
+requirejs(['../app/browserApp']);
