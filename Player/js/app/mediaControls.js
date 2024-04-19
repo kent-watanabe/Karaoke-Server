@@ -6,7 +6,6 @@ define(['karaokeLibrary'], (helper) => {
           width: 600,
           height: 54,
           handlers: {},
-          containerID: "mediaControls",
           controlConfig: {
             showNextButton: true,
             showMicrophone: true,
@@ -33,9 +32,11 @@ define(['karaokeLibrary'], (helper) => {
 
       if (this.controlConfig.showPlayPause) {
         var playButton = helper.createDOMObject(
-          '<button class="mdiButton mdi-play" title="Play">', "play-button",
+          '<button class="mdiButton mdi-play" title="Pause">', "play-button",
           "playButton");
-        playButton.on('click', (event) => {this.togglePlay()});
+        playButton.on('click', (event) => {
+          this.togglePlay()
+        });
         containerRow.append(playButton[0]);
       }
       if (this.controlConfig.showNextButton) {
@@ -78,9 +79,11 @@ define(['karaokeLibrary'], (helper) => {
         volumeSlider.on('change',
           (event) => this.setVolume(event.target.value));
         volumeContainer.append(volumeSlider[0]);
-        volumeContainer.append(helper.createDOMObject(
-          '<label for="volume-slider" class="mdiButton mdi-volume-high">',
-          'volume-label')[0]);
+        var muteButton = helper.createDOMObject(
+          '<button class="mdiButton mdi-volume-high" title="Mute">',
+          'muteButton');
+        muteButton.on('click', (event) => this.toggleMuteButton());
+        volumeContainer.append(muteButton[0]);
         containerRow.append(volumeContainer);
       }
       if (this.controlConfig.showMicrophone) {
@@ -88,46 +91,77 @@ define(['karaokeLibrary'], (helper) => {
           '<button class="mdiButton mdi-microphone" title="Microphone">',
           "microphone", "microphone");
         microphone.on('click', (event) => this.toggleMicrophone());
-        microphone.data('state', 'on');
         containerRow.append(microphone[0]);
       }
       if (this.controlConfig.showFullScreen) {
-        containerRow.append(helper.createDOMObject(
+        var fullScreenButton = helper.createDOMObject(
           '<button class="mdiButton mdi-fullscreen" title="Full Screen">',
-          "full-screen", "fullScreen")[0]);
+          "full-screen", "fullScreen");
+        fullScreenButton.on('click', (event) => this.toggleFullScreen());
+        containerRow.append(fullScreenButton[0]);
       }
     }
 
+    toggleFullScreen() {
+      var fullScreenButton = this.getControl('#full-screen');
+      if (fullScreenButton.hasClass('mdi-fullscreen')) {
+        fullScreenButton.addClass('mdi-fullscreen-exit').removeClass(
+          'mdi-fullscreen');
+        fullScreenButton.attr('title', 'Exit Full Screen');
+      } else {
+        fullScreenButton.addClass('mdi-fullscreen').removeClass(
+          'mdi-fullscreen-exit');
+        fullScreenButton.attr('title', 'Full Screen');
+      }
+      this.fireEvent('full_screen_clicked',
+        fullScreenButton.hasClass('mdi-fullscreen-exit'));
+    }
+
+    toggleMuteButton() {
+      var muteButton = this.getControl('#muteButton');
+      if (muteButton.hasClass('mdi-volume-high')) {
+        muteButton.addClass('mdi-volume-off').removeClass('mdi-volume-high');
+        muteButton.attr('title', 'Unmute');
+      } else {
+        muteButton.addClass('mdi-volume-high').removeClass('mdi-volume-off');
+        muteButton.attr('title', 'Mute');
+      }
+
+      this.fireEvent('mute_clicked', muteButton.hasClass('mdi-volume-off'));
+    }
+
     fireEvent(strEvent) {
-      this.container.trigger(strEvent, Array.prototype.slice.call(arguments, 1));
+      this.container.trigger(strEvent,
+        Array.prototype.slice.call(arguments, 1));
     }
 
     togglePlay() {
       var playButton = this.getControl('#play-button');
       if (playButton.hasClass('mdi-pause')) {
         playButton.addClass('mdi-play').removeClass('mdi-pause');
-        playButton.data('state', 'paused');
+        playButton.attr('title', 'Pause');
       } else {
         playButton.addClass('mdi-pause').removeClass('mdi-play');
-        playButton.data('state', 'play');
+        playButton.attr('title', 'Play');
       }
-      this.fireEvent('play_clicked', playButton.data('state'));
+      this.fireEvent('play_clicked', playButton.hasClass('mdi-play'));
     }
 
     toggleMicrophone() {
       var microphone = this.getControl('#microphone');
       if (microphone.hasClass('mdi-microphone')) {
         microphone.addClass('mdi-microphone-off').removeClass('mdi-microphone');
-        microphone.data('state', 'off');
+        microphone.attr('title', 'Microphone-on');
       } else {
         microphone.addClass('mdi-microphone').removeClass('mdi-microphone-off');
-        microphone.data('state', 'on');
+        microphone.attr('title', 'Microphone-off');
       }
-      this.fireEvent('microphone_clicked', microphone.data('state'));
+      this.fireEvent('microphone_clicked',
+        microphone.hasClass('mdi-microphone'));
     }
 
     setPitch(pitch) {
-      this.getControl('#pitchLabel').html('Pitch step: '+ pitch);
+      this.getControl('#pitchLabel').html('Pitch step: ' + pitch);
       this.fireEvent('pitch_changed', pitch);
     }
 
@@ -150,11 +184,9 @@ define(['karaokeLibrary'], (helper) => {
     setTime(time) {
       var timeProgressBar = this.getControl("#time-progress-bar");
       var length = timeProgressBar.data('length');
-      if(length.getMilliseconds() > 0) {
+      if (length.getMilliseconds() > 0) {
         timeProgressBar[0].value = time.getTime() / length.getTime();
-      }
-      else
-      {
+      } else {
         timeProgressBar[0].value = 0;
       }
       this.getControl('#timeLabel').html(
@@ -164,5 +196,24 @@ define(['karaokeLibrary'], (helper) => {
     getControl(selector) {
       return this.container.find(selector);
     }
+
+    setWidth(width) {
+      this.width = width;
+      this.container.width(width);
+    }
+
+    getWidth(width) {
+      return this.width;
+    }
+
+    setHeight(height) {
+      this.height = height;
+      this.container.height(height);
+    }
+
+    getHeight(height) {
+      return this.height;
+    }
+
   }
 });

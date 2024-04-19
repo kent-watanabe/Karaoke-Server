@@ -119,12 +119,8 @@ body
 
 .queueToolbar
 {
-  margin-left: 5vw;
-  margin-right: 1vw;
   background-color: #F0F0F0;
-  border-left: 1px solid #5c9ccc;
-  border-right: 1px solid #5c9ccc;
-  border-top: 1px solid #5c9ccc;
+  border-bottom: 1px solid black;
 }
 
 .searchBox

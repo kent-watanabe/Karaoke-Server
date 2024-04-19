@@ -32,9 +32,7 @@ define(['./videoPlayer.js', './CDGPlayer.js'],
           $(document.body).prepend(this.playerContainer);
         }
 
-        cdgContainer.on('microphone_clicked', this.microphoneFn.bind(this));
-
-        this.isFullScreen = false;
+        cdgContainer.on('microphone_clicked', (event, state) =>this.microphoneFn(state));
 
         var playerProps = {
           width: initProps.width ? initProps.width : 600,
@@ -49,26 +47,6 @@ define(['./videoPlayer.js', './CDGPlayer.js'],
         videoContainer.css('display', 'none');
         cdgContainer.css('display', 'none');
 
-        playerContainer.on('dblclick', (event) => {
-          if (!this.isFullScreen) {
-            this.playerContainer.requestFullscreen().then(() => {
-              this.setDimensions(window.outerWidth, window.outerHeight);
-              this.cdgPlayer.setDimensions(window.outerWidth,
-                window.outerHeight);
-              this.videoPlayer.setDimensions(window.outerWidth,
-                window.outerHeight);
-              this.isFullScreen = true;
-            });
-          } else {
-            document.exitFullscreen().then(this.exitedFullScreen.bind(this));
-          }
-        });
-
-        playerContainer.on('fullscreenchange', (e) => {
-          if (!document.fullscreenElement) {
-            this.exitedFullScreen();
-          }
-        });
         this.meter = new Tone.Meter();
         this.mic = new Tone.UserMedia().connect(this.meter).toDestination();
         this.mic.open().then(() => {
@@ -81,16 +59,8 @@ define(['./videoPlayer.js', './CDGPlayer.js'],
         Tone.start();
       }
 
-      microphoneFn(event) {
-        if (!this.microphoneEnabled) {
-          this.mic.mute = false;
-          this.cdgPlayer.setMicrophoneStatus(true);
-        } else {
-          this.mic.mute = true;
-          this.cdgPlayer.setMicrophoneStatus(false);
-        }
-        this.microphoneEnabled = !this.microphoneEnabled;
-        event.stopPropagation();
+      microphoneFn(state) {
+        this.mic.mute = !state;
       }
 
       fireEvent(event) {
@@ -100,13 +70,6 @@ define(['./videoPlayer.js', './CDGPlayer.js'],
 
       addListener(event, callback) {
         $(this.playerContainer).on(event, callback);
-      }
-
-      exitedFullScreen() {
-        this.setDimensions(this.width, this.height);
-        this.cdgPlayer.restoreDimensions();
-        this.videoPlayer.restoreDimensions();
-        this.isFullScreen = false;
       }
 
       showVideoPlayer() {
@@ -131,14 +94,6 @@ define(['./videoPlayer.js', './CDGPlayer.js'],
         var playerContainer = $(this.playerContainer);
         playerContainer.width(width);
         playerContainer.height(height);
-        this.cdgPlayer.setDimensions(width, height);
-        this.videoPlayer.setDimensions(width, height);
-      }
-
-      restoreDimensions() {
-        var playerContainer = $(this.playerContainer);
-        playerContainer.width(this.width);
-        playerContainer.height(this.height);
         this.cdgPlayer.setDimensions(width, height);
         this.videoPlayer.setDimensions(width, height);
       }

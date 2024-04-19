@@ -21,28 +21,34 @@ define(['CDGraphics','./mediaControls.js'], function (CDGraphics,MediaControls) 
       this.logo.src = "/img/logo.png";
 
       var container = $(this.container);
-      var containerID = container.attr('id');
-      this.containerID = containerID;
+      this.containerID = container.attr('id');
       this.getID = helper.getID.bind(this);
       this.getJquerySelector = helper.getJquerySelector.bind(this);
       this.pitchShift = new Tone.PitchShift({
         pitch: 0,
+        windowSize: 0.1
       }).toDestination();
       this.player = new Tone.Player();
       this.player.connect(this.pitchShift);
 
       this.cdGraphics = new CDGraphics();
-      var canvasTag = "<canvas width='"+ this.width +"' height='"+ this.height +"'>";
+      var canvasTag = "<canvas id='canvas' width='"+ this.width +"' height='"+ this.height +"'>";
       var canvas = $(canvasTag);
       this.mediaControls = new MediaControls();
       container.append(canvas[0]);
       container.append(this.mediaControls.container);
-      this.mediaControls.getControl('#next-button').on('click', this.nextTrackFn.bind(this));
-      this.mediaControls.container.on('pitch_changed', (e, pitch)=>this.pitchShift.pitch = pitch);
-      this.mediaControls.container.on('volume_changed', (e, volume)=>{
-        this.player.volume.value = volume;
+      this.mediaControls.getControl('#next-button').on('click', (event) => {
+        Tone.Transport.stop();
+        this.mediaControls.initTime();
+        this.fireEvent('nextTrack');
       });
+      this.mediaControls.container.on('pitch_changed', (e, pitch)=>this.pitchShift.pitch = pitch);
+      this.mediaControls.container.on('volume_changed', (e, volume)=>{this.player.volume.value = volume;});
       this.mediaControls.container.on('play_clicked', (event, state)=>this.handlePlayPause(state));
+      this.mediaControls.container.on('mute_clicked', (event, state)=>this.handleMute(state));
+      container.on('full_screen_clicked', (event, state) => this.handleFullScreen(state));
+      container.on('fullscreenchange', (e) => this.handleFullScreenChange(e));
+      container.on('dblclick', (e) => this.handleDoubleClick(e));
 
       this.frameId = 0;
       this.mediaControls.setVolume(Tone.Destination.volume.value);
@@ -50,15 +56,50 @@ define(['CDGraphics','./mediaControls.js'], function (CDGraphics,MediaControls) 
       Tone.Transport.on('start',this.transportPlayHandler.bind(this));
       Tone.Transport.on('pause',this.transportPauseHandler.bind(this));
 
-
       this.setDimensions(this.width, this.height);
       this.ctx = canvas[0].getContext('2d');
       this.clearCanvas();
     }
 
+    handleFullScreenChange(event) {
+      if (!document.fullscreenElement) {
+        this.exitedFullScreen();
+      }
+    }
+
+    handleDoubleClick(event) {
+      this.handleFullScreen(!!document.fullscreenElement)
+    }
+
+    handleFullScreen(state) {
+      if(!state) {
+        $('#'+this.containerID)[0].requestFullscreen().then(() => {
+          this.setDimensions(window.outerWidth, window.outerHeight);
+        });
+      }
+      else
+      {
+        document.exitFullscreen().then(()=>this.exitedFullScreen());
+      }
+    }
+
+    exitedFullScreen() {
+      this.setDimensions(this.width, this.height);
+    }
+
+    handleMute(state)
+    {
+      if(state) {
+        Tone.Destination.mute = true;
+      }
+      else {
+        Tone.Destination.mute = false;
+      }
+    }
+
     handlePlayPause(state)
     {
-      if(state === 'paused') {
+      if(state) {
         Tone.Transport.start();
       }
       else {
@@ -68,11 +109,6 @@ define(['CDGraphics','./mediaControls.js'], function (CDGraphics,MediaControls) 
 
     fireEvent(event) {
       $('#'+this.containerID).trigger(event, Array.prototype.slice.call(arguments, 1));
-    }
-
-    nextTrackFn() {
-      Tone.Transport.stop();
-      this.fireEvent('nextTrack');
     }
 
     getCanvas(returnEl) {
@@ -114,7 +150,7 @@ define(['CDGraphics','./mediaControls.js'], function (CDGraphics,MediaControls) 
 
     transportPlayHandler() {
       if(Tone.Transport.seconds > this.player.buffer.duration) {
-        this.nextTrackFn();
+        this.fireEvent('TrackEnded');
         return;
       }
       this.frameId = requestAnimationFrame(this.transportPlayHandler.bind(this));
@@ -134,6 +170,7 @@ define(['CDGraphics','./mediaControls.js'], function (CDGraphics,MediaControls) 
         this.player.load("/api/assets/id/" + id + ".mp3",).then(()=>{
           this.mediaControls.initTime(new Date(this.player.buffer.duration*1000));
           this.player.sync().start();
+          this.fireEvent('TrackStarted',id);
           Tone.Transport.start();
         });
       });
@@ -152,17 +189,19 @@ define(['CDGraphics','./mediaControls.js'], function (CDGraphics,MediaControls) 
     }
 
     setDimensions(width, height) {
-      var container = $(this.container);
-      var canvas = container.find(this.getJquerySelector('canvas'));
+      var container = $("#" + this.containerID);
+      var canvas = container.find('#canvas');
       canvas.attr('width', width);
-      canvas.attr('height', height-this.mediaControls.container.height());
+      this.mediaControls.setWidth(width);
+      canvas.attr('height', height-this.mediaControls.getHeight());
     }
 
     restoreDimensions() {
-      var container = $(this.container);
-      var canvas = container.find(this.getJquerySelector('canvas'));
+      var container = $("#" + this.containerID);
+      var canvas = container.find('#canvas');
       canvas.attr('width', this.width);
-      canvas.attr('height', this.height-this.mediaControls.container.height());
+      this.mediaControls.setWidth(this.width);
+      canvas.attr('height', this.height-this.mediaControls.getHeight());
     }
   }
 });

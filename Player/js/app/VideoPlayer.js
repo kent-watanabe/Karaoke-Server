@@ -34,6 +34,10 @@ define(function () {
         container.append(video[0]);
       }
 
+      fireEvent(event) {
+        $('#'+this.containerID).trigger(event, Array.prototype.slice.call(arguments, 1));
+      }
+
       addListener(event, callback) {
         this.getVideo().on(event, callback);
       }
@@ -58,7 +62,9 @@ define(function () {
 
       play(id) {
         this.getVideo().attr('src',"/api/assets/id/" + id + ".mpg");
-        this.getVideo(true).play();
+        this.getVideo(true).play().then(() => {
+          this.fireEvent('TrackStarted', id);
+        });
       }
 
       pause() {

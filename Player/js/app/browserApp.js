@@ -19,7 +19,7 @@ function processCorrelation(correlationId) {
   }
 }
 
-define(['js/app/karaokePlayer.js', 'karaokeLibrary', 'js/app/Queue.js'],
+define(['js/app/karaokePlayer.js', 'karaokeLibrary', 'js/app/queue.js'],
   function (KaraokePlayer, h, Queue) {
     $(document).ready(function () {
       helper = h;
@@ -43,9 +43,10 @@ define(['js/app/karaokePlayer.js', 'karaokeLibrary', 'js/app/Queue.js'],
           dataMimeType: 'application/json',
           queueId: localStorage.getItem('queueId')
         });
-      queue.addListener('playTrack',
-        (event, track) => karaokePlayer.playTrack(track));
+      queue.addListener('playTrack',(event, track) => karaokePlayer.playTrack(track));
       queue.addListener('stop', (event) => karaokePlayer.stop());
+      karaokePlayer.addListener('TrackEnded',(event,id) => queue.trackEnded());
+      karaokePlayer.addListener('TrackStarted',(event,id) => queue.trackStarted(id));
       karaokePlayer.addListener('nextTrack',(event) => queue.playNextTrack());
 
       myWorker.addEventListener("message",
@@ -55,13 +56,13 @@ define(['js/app/karaokePlayer.js', 'karaokeLibrary', 'js/app/Queue.js'],
             var queueItems = JSON.parse(message.data).queueItems;
             queue.setData(queueItems);
           } else if (message.messageType === "TRACK_ADDED") {
-            queue.addItemToQueue(JSON.parse(message.data));
-          } else if (["TRACK_REMOVED", "TRACK_PLAYED"].includes(
-            message.messageType)) {
+            queue.handleTrackAdded(JSON.parse(message.data));
+          } else if (["TRACK_REMOVED", "TRACK_PLAYED"].includes(message.messageType)) {
             var track = JSON.parse(message.data);
-            queue.removeItemFromQueue(track);
+            queue.handleTrackPlayed(track);
           } else if (message.messageType === "PLAY_TRACK") {
-            queue.fireEvent('playTrack', JSON.parse(message.data));
+            var track = JSON.parse(message.data);
+            karaokePlayer.playTrack(track);
           }
         });
     });
