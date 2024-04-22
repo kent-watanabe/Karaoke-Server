@@ -74,6 +74,11 @@ body
   height: 100%;
 }
 
+.qrCodeDialog{
+  width: 300px;
+  height: 300px;
+}
+
 .mdiButton
 {
   font-family: Material Design Icons !important;
@@ -83,9 +88,27 @@ body
   border-radius: 3px;
 }
 
+.search-container
+{
+  height: 486px;
+
+}
+
+.join-container
+{
+  display: none;
+  height: 100px;
+  width: 400px;
+}
+
 .mdiButton:hover
 {
   background-color: #e5e5e5;
+}
+
+.queue-grid
+{
+  width: 600px;
 }
 
 .queue-gridHeader

@@ -1,4 +1,4 @@
-define(['CDGraphics','./mediaControls.js'], function (CDGraphics,MediaControls) {
+define(['lib/CDGraphics','components/mediaControls'], function (CDGraphics,MediaControls) {
   return class CDGPlayer {
     constructor(props) {
       if (props == null) {

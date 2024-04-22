@@ -10,27 +10,33 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.watanabe.karaokeserver.data.karaoke.MediaFileLocation;
 import com.watanabe.karaokeserver.data.karaoke.MediaFileLocationRepository;
 import com.watanabe.karaokeserver.data.karaoke.MediaType;
+import com.watanabe.karaokeserver.data.karaoke.Message;
 import com.watanabe.karaokeserver.data.karaoke.MessageResponse;
 import com.watanabe.karaokeserver.data.karaoke.MessageType;
 import com.watanabe.karaokeserver.data.karaoke.Queue;
 import com.watanabe.karaokeserver.data.karaoke.QueueItem;
 import com.watanabe.karaokeserver.data.karaoke.QueueRepository;
 import com.watanabe.karaokeserver.util.JsonUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Enumeration;
 import java.util.Optional;
 import javax.imageio.ImageIO;
-import net.minidev.json.JSONObject;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +47,8 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(path = "api/queue")
 @PreAuthorize("hasRole('ROLE_USER')")
 public class QueueController {
+
+  private static final String QRURIFormat = "%s://%s:%d/mobilequeue.html?queueId=%s";
 
   @Autowired
   private QueueRepository queueRepository;
@@ -102,16 +110,43 @@ public class QueueController {
     template.send("karaoke", queueItem.getId(), JsonUtil.toJson(message));
   }
 
-  @PostMapping(value = "/{queueId}/QRCode", produces = "image/jpeg")
+  @GetMapping(value = "/{queueId}/QRCode", produces = "image/jpeg")
   @ResponseStatus(code = OK)
   public void createQueueQRCode(@PathVariable("queueId") String queueId,
-      @RequestBody JSONObject queueInfo,
-      HttpServletResponse response) throws IOException, WriterException {
+      HttpServletRequest request, HttpServletResponse response)
+      throws IOException, WriterException, URISyntaxException {
     QRCodeWriter barcodeWriter = new QRCodeWriter();
     BitMatrix bitMatrix = null;
+    URI uri = new URI(request.getRequestURL().toString());
+    URI linkURI = null;
+    if (uri.getHost().equals("localhost")) {
+      String computerName = System.getenv().get("COMPUTERNAME") != null ? System.getenv().get("COMPUTERNAME") :  System.getenv().get("HOSTNAME");
+      if(computerName == null) {
+        NetworkInterface networkInterface = NetworkInterface.getByInetAddress(
+            InetAddress.getLocalHost());
+        Enumeration<InetAddress> e = networkInterface.getInetAddresses();
+        while (e.hasMoreElements()) {
+          InetAddress inetAddress = e.nextElement();
+          if (!inetAddress.isLoopbackAddress() || inetAddress.isSiteLocalAddress()) {
+            linkURI = new URI(String.format(QRURIFormat, uri.getScheme(), inetAddress.getHostAddress(), uri.getPort(), queueId));
+            break;
+          }
+        }
+      }
+      else {
+        linkURI = new URI(String.format(QRURIFormat, uri.getScheme(), computerName + ".local", uri.getPort(), queueId));
+      }
+    } else {
+      linkURI = new URI(String.format(QRURIFormat, uri.getScheme(), uri.getHost(), uri.getPort(), queueId));
+    }
+    if (linkURI == null) {
+      throw new URISyntaxException("", "Invalid URI");
+    }
+
     bitMatrix = barcodeWriter.encode(
-        queueInfo.getAsString("url") + "?queue=" + queueId,
+        linkURI.toString(),
         BarcodeFormat.QR_CODE, 200, 200);
+
     BufferedImage image = MatrixToImageWriter.toBufferedImage(bitMatrix);
     OutputStream output = response.getOutputStream();
     ImageIO.write(image, "jpg", output);

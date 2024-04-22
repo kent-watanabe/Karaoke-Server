@@ -1,4 +1,4 @@
-define(['karaokeLibrary'], (helper) => {
+define(['lib/karaokeLibrary'], (helper) => {
   return class MediaControls {
     constructor(props) {
       if (props == null) {

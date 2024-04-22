@@ -1,4 +1,4 @@
-define(['karaokeLibrary'], function (helper) {
+define(['lib/karaokeLibrary'], function (helper) {
   class AddTrack{
     constructor(props) {
       var btn = $('<button title="Add to Queue">');
@@ -28,7 +28,7 @@ define(['karaokeLibrary'], function (helper) {
   {
     constructor()
     {
-      var searchContainer = helper.createDOMObject('<div id="search-container">');
+      var searchContainer = helper.createDOMObject('<div id="search-container" class="search-container">');
       searchContainer.attr('display', 'none');
       var searchToolBar = helper.createDOMObject('<div>', 'db-search-toolbar',
         'searchToolbar');
@@ -67,7 +67,6 @@ define(['karaokeLibrary'], function (helper) {
       this.searchContainer = searchContainer;
       this.searchGrid = new tui.Grid({
         el: searchContainer[0],
-        height: 486,
         columns: [
           {
             header: " ",

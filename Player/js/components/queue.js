@@ -1,4 +1,4 @@
-define(['karaokeLibrary', "./search.js"], function (helper, Search) {
+define(['lib/karaokeLibrary', "components/search"], function (helper, Search) {
   return class Queue {
     constructor() {
       var queueElement = $('#queue');
@@ -16,10 +16,9 @@ define(['karaokeLibrary', "./search.js"], function (helper, Search) {
       queueToolBar.append(joinButton);
       queueToolBar.append(qrCode);
       tui.Grid.applyTheme('striped');
-      var grid = queueElement.append('<div id="grid"></div>');
+      var grid = queueElement.append('<div id="grid" class="queue-grid">');
       this.queue = new tui.Grid({
         el: grid[0],
-        width: '600',
         bodyHeight: 'auto',
         columns: [
           {name: 'title', header: 'Title'},
@@ -44,23 +43,20 @@ define(['karaokeLibrary', "./search.js"], function (helper, Search) {
     createQRCode() {
       fetch(
         '/api/queue/' + localStorage.getItem('queueId') + '/QRCode', {
-          method: 'POST',
+          method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'X-XSRF-TOKEN': helper.getXSRFToken()
-          },
-          body: JSON.stringify({url: document.URL})
+          }
         })
       .then((response) => response.blob())
       .then((data) => {
           var img = $('<img>');
           img.attr('src', URL.createObjectURL(data));
-          var div = $('<div>');
+          var div = $('<div class="qrCodeDialog">');
           div.append(img);
           div.dialog({
             autoOpen: true,
-            width: 300,
-            height: 300,
             modal: true,
             resizable: false,
             closeOnEscape: false,
@@ -164,8 +160,7 @@ define(['karaokeLibrary', "./search.js"], function (helper, Search) {
     }
 
     joinParty() {
-      var joinContainer = helper.createDOMObject('<div>', 'join-container');
-      joinContainer.attr('display', 'none');
+      var joinContainer = helper.createDOMObject('<div>', 'join-container',"join-container");
       var queueIdLabel = helper.createDOMObject(
         '<label htmlFor="queueId" class="inputLabel">Queue ID</label>');
       var queueIdInput = helper.createDOMObject(' <input type="text"/>',
@@ -182,8 +177,6 @@ define(['karaokeLibrary', "./search.js"], function (helper, Search) {
       joinContainer.append(joinButton);
       joinContainer.dialog({
         autoOpen: true,
-        height: 100,
-        width: 400,
         modal: true,
         resizable: false,
         closeOnEscape: false,

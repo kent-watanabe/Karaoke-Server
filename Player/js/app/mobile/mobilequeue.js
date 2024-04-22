@@ -1,5 +1,3 @@
-var karaokePlayer = null;
-var helper = null;
 var queue = null;
 var myWorker = null;
 var correlationMap = {};
@@ -19,16 +17,9 @@ function processCorrelation(correlationId) {
   }
 }
 
-define(['js/app/karaokePlayer.js', 'karaokeLibrary', 'js/app/queue.js'],
-  function (KaraokePlayer, h, Queue) {
+define(['lib/karaokeLibrary', 'components/queue'],
+  function (KaraokeLibrary, Queue) {
     $(document).ready(function () {
-      helper = h;
-      karaokePlayer = new KaraokePlayer({
-        width: 600,
-        height: 486,
-        showControls: true
-      });
-
       queue = new Queue();
       myWorker = new Worker("js/karaokews.js");
       postMessageToWorker(
@@ -43,11 +34,6 @@ define(['js/app/karaokePlayer.js', 'karaokeLibrary', 'js/app/queue.js'],
           dataMimeType: 'application/json',
           queueId: localStorage.getItem('queueId')
         });
-      queue.addListener('playTrack',(event, track) => karaokePlayer.playTrack(track));
-      queue.addListener('stop', (event) => karaokePlayer.stop());
-      karaokePlayer.addListener('TrackEnded',(event,id) => queue.trackEnded());
-      karaokePlayer.addListener('TrackStarted',(event,id) => queue.trackStarted(id));
-      karaokePlayer.addListener('nextTrack',(event) => queue.playNextTrack());
 
       myWorker.addEventListener("message",
         function handleMessageFromWorker(msg) {
@@ -62,7 +48,6 @@ define(['js/app/karaokePlayer.js', 'karaokeLibrary', 'js/app/queue.js'],
             queue.handleTrackPlayed(track);
           } else if (message.messageType === "PLAY_TRACK") {
             var track = JSON.parse(message.data);
-            karaokePlayer.playTrack(track);
           }
         });
     });
