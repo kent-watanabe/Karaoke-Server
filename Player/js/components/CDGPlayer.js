@@ -1,4 +1,5 @@
-define(['lib/CDGraphics','components/mediaControls'], function (CDGraphics,MediaControls) {
+define(['lib/CDGraphics','components/mediaControls','lib/karaokeLibrary'],
+  function (CDGraphics,MediaControls,helper) {
   return class CDGPlayer {
     constructor(props) {
       if (props == null) {

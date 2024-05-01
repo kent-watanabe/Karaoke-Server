@@ -32,7 +32,7 @@ define(['lib/karaokeLibrary'], (helper) => {
 
       if (this.controlConfig.showPlayPause) {
         var playButton = helper.createDOMObject(
-          '<button class="mdiButton mdi-play" title="Pause">', "play-button",
+          '<button class="mdiButton toolbarButton mdi-play" title="Pause">', "play-button",
           "playButton");
         playButton.on('click', (event) => {
           this.togglePlay()
@@ -41,7 +41,7 @@ define(['lib/karaokeLibrary'], (helper) => {
       }
       if (this.controlConfig.showNextButton) {
         containerRow.append(helper.createDOMObject(
-          '<button class="mdiButton mdi-skip-next" title="Next Track">',
+          '<button class="mdiButton toolbarButton mdi-skip-next" title="Next Track">',
           "next-button", "nextButton")[0]);
       }
       if (this.controlConfig.showProgressBar) {
@@ -65,7 +65,7 @@ define(['lib/karaokeLibrary'], (helper) => {
         pitchContainer.append(pitchRange[0]);
         pitchContainer.append(
           helper.createDOMObject(
-            '<label id="pitchLabel" for=pitch-slider" class="mdiButton mediaControls-label"></label>'));
+            '<label id="pitchLabel" for=pitch-slider" class="mdiButton toolbarButton mediaControls-label"></label>'));
         containerRow.append(pitchContainer);
         this.setPitch(0);
 
@@ -80,7 +80,7 @@ define(['lib/karaokeLibrary'], (helper) => {
           (event) => this.setVolume(event.target.value));
         volumeContainer.append(volumeSlider[0]);
         var muteButton = helper.createDOMObject(
-          '<button class="mdiButton mdi-volume-high" title="Mute">',
+          '<button class="mdiButton toolbarButton mdi-volume-high" title="Mute">',
           'muteButton');
         muteButton.on('click', (event) => this.toggleMuteButton());
         volumeContainer.append(muteButton[0]);
@@ -88,14 +88,14 @@ define(['lib/karaokeLibrary'], (helper) => {
       }
       if (this.controlConfig.showMicrophone) {
         var microphone = helper.createDOMObject(
-          '<button class="mdiButton mdi-microphone" title="Microphone">',
+          '<button class="mdiButton toolbarButton mdi-microphone" title="Microphone">',
           "microphone", "microphone");
         microphone.on('click', (event) => this.toggleMicrophone());
         containerRow.append(microphone[0]);
       }
       if (this.controlConfig.showFullScreen) {
         var fullScreenButton = helper.createDOMObject(
-          '<button class="mdiButton mdi-fullscreen" title="Full Screen">',
+          '<button class="mdiButton toolbarButton mdi-fullscreen" title="Full Screen">',
           "full-screen", "fullScreen");
         fullScreenButton.on('click', (event) => this.toggleFullScreen());
         containerRow.append(fullScreenButton[0]);

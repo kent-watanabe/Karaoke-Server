@@ -23,9 +23,19 @@ body
 {
   font-family: Material Design Icons !important;
   border: none;
-  font-size: 2em !important;
   align-content: center;
+}
+
+.toolbarButton
+{
+  font-size: 1.5em;
   border-radius: 3px;
+}
+
+.addToQueueButton
+{
+  font-size: 1em;
+  color: Blue;
 }
 
 .search-container

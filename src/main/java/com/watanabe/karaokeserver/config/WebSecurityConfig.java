@@ -4,7 +4,8 @@ import static jakarta.servlet.DispatcherType.ERROR;
 import static jakarta.servlet.DispatcherType.FORWARD;
 
 import com.watanabe.karaokeserver.data.auth.CustomAuthenticationProvider;
-import com.watanabe.karaokeserver.data.auth.UserRepository;
+import com.watanabe.karaokeserver.data.auth.KaraokeUserRepository;
+import com.watanabe.karaokeserver.util.JsonUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,23 +13,25 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.Supplier;
+import net.minidev.json.JSONUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.DefaultLoginPageConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
-import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
-import org.springframework.security.web.csrf.HttpSessionCsrfTokenRepository;
 import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -38,14 +41,15 @@ import org.springframework.web.filter.OncePerRequestFilter;
 @EnableWebSecurity
 public class WebSecurityConfig {
 
+  private static final String DEFAULT_CSRF_PARAMETER_NAME = "_csrf";
+
   @Autowired
-  UserRepository userRepository;
+  KaraokeUserRepository userRepository;
 
   @Autowired
   private CustomAuthenticationProvider authProvider;
 
   private static final class CsrfCookieFilter extends OncePerRequestFilter {
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
         throws ServletException, IOException {
@@ -64,7 +68,7 @@ public class WebSecurityConfig {
 
     XorCsrfTokenRequestAttributeHandler delegate = new XorCsrfTokenRequestAttributeHandler();
     // set the name of the attribute the CsrfToken will be populated on
-    delegate.setCsrfRequestAttributeName("_csrf");
+    delegate.setCsrfRequestAttributeName(DEFAULT_CSRF_PARAMETER_NAME);
     CsrfTokenRequestHandler requestHandler = new CsrfTokenRequestHandler() {
       /**
        * Handles a request using a {@link CsrfToken}.
@@ -77,6 +81,7 @@ public class WebSecurityConfig {
       public void handle(HttpServletRequest request, HttpServletResponse response,
           Supplier<CsrfToken> csrfToken) {
         delegate.handle(request, response, csrfToken);
+        response.addHeader(DEFAULT_CSRF_PARAMETER_NAME, csrfToken.get().getToken());
       }
 
       @Override
@@ -89,17 +94,25 @@ public class WebSecurityConfig {
       }
     };
 
-    http.authorizeHttpRequests((authorize) ->
-            authorize
-                .dispatcherTypeMatchers(FORWARD, ERROR).permitAll()
-                .anyRequest().authenticated())
+    http.authorizeHttpRequests((requests) ->
+            requests
+                .dispatcherTypeMatchers(FORWARD, ERROR)
+                .permitAll()
+                .requestMatchers(
+                    new AntPathRequestMatcher("/newUser.html"),
+                    new AntPathRequestMatcher("/js/app/registerUser.js"),
+                    new AntPathRequestMatcher("/js/lib/*"),
+                    new AntPathRequestMatcher("/api/user"))
+                .permitAll()
+                .anyRequest()
+                .authenticated()
+                )
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(c->c.csrfTokenRepository
-                (CookieCsrfTokenRepository.withHttpOnlyFalse())
+        .csrf(c->c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(requestHandler))
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
-        .formLogin(Customizer.withDefaults());
-
+        //.formLogin(Customizer.withDefaults());
+        .formLogin(flc -> flc.loginPage("/login").permitAll());
     return http.build();
   }
 

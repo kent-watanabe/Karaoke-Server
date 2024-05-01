@@ -8,7 +8,6 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -18,10 +17,7 @@ import org.springframework.stereotype.Component;
 public class CustomAuthenticationProvider implements AuthenticationProvider {
 
   @Autowired
-  private UserRepository userRepository;
-
-  private PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-
+  private KaraokeUserRepository userRepository;
   /**
    * Performs authentication with the same contract as
    * {@link AuthenticationManager#authenticate(Authentication)} .

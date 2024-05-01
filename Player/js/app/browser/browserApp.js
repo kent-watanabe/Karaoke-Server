@@ -1,8 +1,14 @@
 var karaokePlayer = null;
-var helper = null;
 var queue = null;
 var myWorker = null;
 var correlationMap = {};
+var currentUser = null;
+
+fetch('/whoami',{method: 'GET'}).then((response)=> {
+  response.text().then(text => {
+    currentUser = JSON.parse(text);
+  });
+});
 
 function postMessageToWorker(msg, fn) {
   if (fn) {
@@ -20,9 +26,9 @@ function processCorrelation(correlationId) {
 }
 
 define(['components/karaokePlayer', 'lib/karaokeLibrary', 'components/queue'],
-  function (KaraokePlayer, h, Queue) {
+  function (KaraokePlayer, helper, Queue) {
     $(document).ready(function () {
-      helper = h;
+      $('#greeting').text('Logged in as: ' + currentUser.username);
       karaokePlayer = new KaraokePlayer({
         width: 600,
         height: 486,
@@ -43,11 +49,12 @@ define(['components/karaokePlayer', 'lib/karaokeLibrary', 'components/queue'],
           dataMimeType: 'application/json',
           queueId: localStorage.getItem('queueId')
         });
-      queue.addListener('playTrack',(event, track) => karaokePlayer.playTrack(track));
       queue.addListener('stop', (event) => karaokePlayer.stop());
       karaokePlayer.addListener('TrackEnded',(event,id) => queue.trackEnded());
       karaokePlayer.addListener('TrackStarted',(event,id) => queue.trackStarted(id));
       karaokePlayer.addListener('nextTrack',(event) => queue.playNextTrack());
+
+      $('#logoutBtn').on('click', ()=>window.location.href = '/logout');
 
       myWorker.addEventListener("message",
         function handleMessageFromWorker(msg) {

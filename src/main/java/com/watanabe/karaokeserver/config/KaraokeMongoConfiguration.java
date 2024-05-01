@@ -10,14 +10,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.core.env.Environment;
 import org.springframework.data.mongodb.MongoDatabaseFactory;
+import org.springframework.data.mongodb.config.AbstractMongoClientConfiguration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.SimpleMongoClientDatabaseFactory;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 
 @Configuration
 @EnableMongoRepositories(
-    basePackages = {"com.watanabe.karaokeserver.data.karaoke"},
-    mongoTemplateRef = "karaokeMongoTemplate")
+    basePackages = {"com.watanabe.karaokeserver.data.karaoke"})
 public class KaraokeMongoConfiguration {
 
   @Autowired
@@ -26,7 +26,7 @@ public class KaraokeMongoConfiguration {
   @Autowired
   private Environment environment;
 
-  @Bean
+  @Bean(name = "karaokeMongoProperties")
   @Primary
   public MongoProperties karaokeMongoProperties() {
     MongoProperties properties =  new MongoProperties();
@@ -34,17 +34,16 @@ public class KaraokeMongoConfiguration {
     return properties;
   }
 
-  @Bean
+  @Bean(name = "karaokeMongoTemplate")
   @Primary
   public MongoTemplate karaokeMongoTemplate() {
     return new MongoTemplate(karaokeDbFactory((MongoProperties)context.getBean("karaokeMongoProperties")));
   }
 
-  @Bean
+  @Bean(name = "karaokeDbFactory")
   @Primary
   public MongoDatabaseFactory karaokeDbFactory(
       final @Qualifier("karaokeMongoProperties") MongoProperties mongo) {
     return new SimpleMongoClientDatabaseFactory(mongo.getUri());
   }
-
 }

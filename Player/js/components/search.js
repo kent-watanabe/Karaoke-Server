@@ -2,7 +2,7 @@ define(['lib/karaokeLibrary'], function (helper) {
   class AddTrack{
     constructor(props) {
       var btn = $('<button title="Add to Queue">');
-      btn.addClass('mdiButton mdi-plus');
+      btn.addClass('mdiButton addToQueueButton mdi-plus');
       btn.css('align-content', 'center');
       btn.on('click', (e)=>{
         this.fireEvent('add_track',this.grid.getRow(this.rowKey));

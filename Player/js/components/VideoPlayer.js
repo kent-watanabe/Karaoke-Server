@@ -1,4 +1,4 @@
-define(function () {
+define(['lib/karaokeLibrary'],function (helper) {
     return class VideoPlayer {
       constructor(props) {
         if (props == null) {

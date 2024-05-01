@@ -6,19 +6,18 @@ define(['lib/karaokeLibrary', "components/search"], function (helper, Search) {
         'queueToolbar');
       queueElement.append(queueToolBar);
       var searchButton = helper.createDOMObject(
-        '<button class="mdiButton mdi-database-search" title="Search">',
+        '<button class="mdiButton toolbarButton mdi-database-search" title="Search">',
         'addTrack', 'searchButton');
       var joinButton = helper.createDOMObject(
-        '<button class="mdiButton mdi-location-enter" title="Join another party">');
+        '<button class="mdiButton toolbarButton mdi-location-enter" title="Join another party">');
       var qrCode = helper.createDOMObject(
-        '<button class="mdiButton mdi-qrcode" title="Share Link">');
+        '<button class="mdiButton toolbarButton mdi-qrcode" title="Share Link">');
       queueToolBar.append(searchButton);
       queueToolBar.append(joinButton);
       queueToolBar.append(qrCode);
       tui.Grid.applyTheme('striped');
-      var grid = queueElement.append('<div id="grid" class="queue-grid">');
       this.queue = new tui.Grid({
-        el: grid[0],
+        el: queueElement[0],
         bodyHeight: 'auto',
         columns: [
           {name: 'title', header: 'Title'},
@@ -57,6 +56,7 @@ define(['lib/karaokeLibrary', "components/search"], function (helper, Search) {
           div.append(img);
           div.dialog({
             autoOpen: true,
+            width: 'auto',
             modal: true,
             resizable: false,
             closeOnEscape: false,
@@ -203,9 +203,7 @@ define(['lib/karaokeLibrary', "components/search"], function (helper, Search) {
           artist: dataToSend.artist,
           duration: 0,
           singer: $('#singer').val()
-        }),
-        success: function (data) {
-        }
+        })
       });
     }
   }

@@ -1,5 +1,5 @@
-define(['components/VideoPlayer', 'components/CDGPlayer'],
-  function (VideoPlayer, CDGPlayer) {
+define(['components/VideoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
+  function (VideoPlayer, CDGPlayer, helper) {
     return class KaraokePlayer {
       constructor(initProps) {
         if (initProps == null) {
@@ -14,8 +14,7 @@ define(['components/VideoPlayer', 'components/CDGPlayer'],
           throw new Error("props is not an object");
         }
 
-        var playerContainer = helper.createDOMObject('<div>', 'playerContainer',
-          'playerContainer');
+        var playerContainer= $('#playerContainer');
         playerContainer.width(this.width);
         playerContainer.height(this.height);
 
@@ -26,12 +25,6 @@ define(['components/VideoPlayer', 'components/CDGPlayer'],
         var cdgContainer = helper.createDOMObject('<div>', 'cdg-container',
           'cdgContainer');
         playerContainer.append(cdgContainer[0]);
-        if (initProps.container) {
-          $(initProps.container).prepend(this.playerContainer);
-        } else {
-          $(document.body).prepend(this.playerContainer);
-        }
-
         cdgContainer.on('microphone_clicked', (event, state) =>this.microphoneFn(state));
 
         var playerProps = {
