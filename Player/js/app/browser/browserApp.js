@@ -28,7 +28,7 @@ function processCorrelation(correlationId) {
 define(['components/karaokePlayer', 'lib/karaokeLibrary', 'components/queue'],
   function (KaraokePlayer, helper, Queue) {
     $(document).ready(function () {
-      $('#greeting').text('Logged in as: ' + currentUser.username);
+      $('#username').text(currentUser.username);
       karaokePlayer = new KaraokePlayer({
         width: 600,
         height: 486,
@@ -53,8 +53,6 @@ define(['components/karaokePlayer', 'lib/karaokeLibrary', 'components/queue'],
       karaokePlayer.addListener('TrackEnded',(event,id) => queue.trackEnded());
       karaokePlayer.addListener('TrackStarted',(event,id) => queue.trackStarted(id));
       karaokePlayer.addListener('nextTrack',(event) => queue.playNextTrack());
-
-      $('#logoutBtn').on('click', ()=>window.location.href = '/logout');
 
       myWorker.addEventListener("message",
         function handleMessageFromWorker(msg) {

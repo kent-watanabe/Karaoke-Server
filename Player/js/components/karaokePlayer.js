@@ -38,7 +38,6 @@ define(['components/VideoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
         playerProps.container = cdgContainer[0];
         this.cdgPlayer = new CDGPlayer(playerProps);
         videoContainer.css('display', 'none');
-        cdgContainer.css('display', 'none');
 
         this.meter = new Tone.Meter();
         this.mic = new Tone.UserMedia().connect(this.meter).toDestination();

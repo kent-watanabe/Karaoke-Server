@@ -2,19 +2,17 @@ define(['lib/karaokeLibrary', "components/search"], function (helper, Search) {
   return class Queue {
     constructor() {
       var queueElement = $('#queue');
-      var queueToolBar = helper.createDOMObject('<div>', 'queue-search-toolbar',
-        'queueToolbar');
+      var queueToolBar = $("<nav id='queue-search-toolbar' class='navbar navbar-expand-sn navbar-light bg-light'>");
       queueElement.append(queueToolBar);
-      var searchButton = helper.createDOMObject(
-        '<button class="mdiButton toolbarButton mdi-database-search" title="Search">',
-        'addTrack', 'searchButton');
-      var joinButton = helper.createDOMObject(
-        '<button class="mdiButton toolbarButton mdi-location-enter" title="Join another party">');
-      var qrCode = helper.createDOMObject(
-        '<button class="mdiButton toolbarButton mdi-qrcode" title="Share Link">');
-      queueToolBar.append(searchButton);
-      queueToolBar.append(joinButton);
-      queueToolBar.append(qrCode);
+      var ul = $('<ul class="navbar-nav flex-row">');
+      var searchButton = $('<button class="nav-pills mdi mdi-database-search bg-light" id="addTrack" title="Search">');
+      var joinButton = $('<button class="nav-pills mdi mdi-location-enter bg-light" title="Join another party">');
+      var qrCode = $('<button class="nav-pills mdi mdi-qrcode bg-light" title="Share Link">');
+      queueToolBar.append(ul);
+      ul.append(searchButton);
+      ul.append(joinButton);
+      ul.append(qrCode);
+
       tui.Grid.applyTheme('striped');
       this.queue = new tui.Grid({
         el: queueElement[0],

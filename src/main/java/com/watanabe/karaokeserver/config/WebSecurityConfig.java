@@ -101,6 +101,7 @@ public class WebSecurityConfig {
                 .requestMatchers(
                     new AntPathRequestMatcher("/newUser.html"),
                     new AntPathRequestMatcher("/js/app/registerUser.js"),
+                    new AntPathRequestMatcher("/css/*"),
                     new AntPathRequestMatcher("/js/lib/*"),
                     new AntPathRequestMatcher("/api/user"))
                 .permitAll()

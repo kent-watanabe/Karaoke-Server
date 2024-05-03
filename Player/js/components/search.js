@@ -1,8 +1,7 @@
 define(['lib/karaokeLibrary'], function (helper) {
   class AddTrack{
     constructor(props) {
-      var btn = $('<button title="Add to Queue">');
-      btn.addClass('mdiButton addToQueueButton mdi-plus');
+      var btn = $('<button title="Add to Queue" class="mdi addToQueueButton mdi-plus">');
       btn.css('align-content', 'center');
       btn.on('click', (e)=>{
         this.fireEvent('add_track',this.grid.getRow(this.rowKey));
@@ -28,39 +27,21 @@ define(['lib/karaokeLibrary'], function (helper) {
   {
     constructor()
     {
-      var searchContainer = helper.createDOMObject('<div id="search-container" class="search-container">');
+      var searchContainer = $('<div id="search-container" class="container-fluid" style="width:60vw;height:40vh">');
       searchContainer.attr('display', 'none');
-      var searchToolBar = helper.createDOMObject('<div>', 'db-search-toolbar',
-        'searchToolbar');
-      var searchLabel = helper.createDOMObject(
-        '<label htmlFor="search" class="inputLabel">Search</label>');
-      var searchInput = helper.createDOMObject(' <input type="text"/>',
-        'search', 'searchBox');
-      var searchTypeDiv = helper.createDOMObject('<div class="searchTypeDiv" style="display:block;align-content:center">');
-      var titleLabel = helper.createDOMObject(
-        '<label htmlFor="searchType" class="inputLabel">Title</label>');
-      var titleType = helper.createDOMObject(
-        '<input type="radio" name="searchType" value="title">');
-      var artistLabel = helper.createDOMObject(
-        '<label htmlFor="searchType" class="inputLabel">Artist</label>');
-      var artistType = helper.createDOMObject(
-        '<input type="radio" name="searchType" value="artist" checked>');
-      var singerLabel = helper.createDOMObject(
-        '<label htmlFor="singer" class="inputLabel">Singer</label>', null,
-        'singerLabel');
-      var singerInput = helper.createDOMObject(' <input type="text"/>',
-        'singer', 'singerBox');
-      var searchButton = helper.createDOMObject(
-        '<button class="mdiButton mdi-database-search" title="Search">',
-        'doSearchBtn', 'searchButton');
-      searchToolBar.append(searchLabel);
+      var searchToolBar = $('<div id="db-search-toolbar" class="navbar navbar-expand-sm flex-row">');
+      var searchInput = $('<input type="text" id="search" class="form-control m-2" placeholder="Artist-Title"/>');
+      var searchTypeDiv = $('<div class="input-control border-1">');
+      var titleDiv = $('<div class="form-check m-1">');
+      titleDiv.html('<label htmlFor="searchType" class="form-check-label">Title</label><input type="radio" name="searchType" value="title" class="form-check-input">');
+      var artistDiv = $('<div class="form-check">');
+      artistDiv.html('<label htmlFor="searchType" class="form-check-label">Artist</label><input type="radio" name="searchType" value="artist" class="form-check-input" checked>');
+      var singerInput = $('<input type="text" id="singer" class="form-control m-2" style="width:10em;"/>');
+      var searchButton = $('<button class="btn btn-primary mdi mdi-database-search" title="Search" id="doSearchBtn">');
       searchToolBar.append(searchInput);
-      searchTypeDiv.append(artistLabel);
-      searchTypeDiv.append(artistType);
-      searchTypeDiv.append(titleLabel);
-      searchTypeDiv.append(titleType);
+      searchTypeDiv.append(artistDiv);
+      searchTypeDiv.append(titleDiv);
       searchToolBar.append(searchTypeDiv);
-      searchToolBar.append(singerLabel);
       searchToolBar.append(singerInput);
       searchToolBar.append(searchButton);
       searchContainer.append(searchToolBar);
@@ -78,7 +59,7 @@ define(['lib/karaokeLibrary'], function (helper) {
             width:40,
             align:"center"
           },
-          {name: 'title', header: 'Title', minWidth: 400},
+          {name: 'title', header: 'Title', minWidth: 300},
           {name: 'artist', header: 'Artist', minWidth: 200},
         ]
       });
@@ -114,7 +95,7 @@ define(['lib/karaokeLibrary'], function (helper) {
     {
       this.searchContainer.dialog({
         autoOpen: true,
-        height: 300,
+        height: 350,
         width: 900,
         title: 'Search',
         modal: true,
