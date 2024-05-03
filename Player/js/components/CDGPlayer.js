@@ -5,7 +5,7 @@ define(['lib/CDGraphics','components/mediaControls','lib/karaokeLibrary'],
       if (props == null) {
         Object.assign(this, {
           width: 600,
-          height: 432,
+          height: 540,
           showControls: true
         });
       } else if (props instanceof Object) {
@@ -23,8 +23,6 @@ define(['lib/CDGraphics','components/mediaControls','lib/karaokeLibrary'],
 
       var container = $(this.container);
       this.containerID = container.attr('id');
-      this.getID = helper.getID.bind(this);
-      this.getJquerySelector = helper.getJquerySelector.bind(this);
       this.pitchShift = new Tone.PitchShift({
         pitch: 0,
         windowSize: 0.1
@@ -33,11 +31,25 @@ define(['lib/CDGraphics','components/mediaControls','lib/karaokeLibrary'],
       this.player.connect(this.pitchShift);
 
       this.cdGraphics = new CDGraphics();
-      var canvasTag = "<canvas id='canvas' width='"+ this.width +"' height='"+ this.height +"'>";
-      var canvas = $(canvasTag);
-      this.mediaControls = new MediaControls();
+      var canvas = $('<canvas id="canvas">');
+      canvas.attr('width',this.width);
+      canvas.attr('height',this.height-54);
+      this.mediaControls = new MediaControls({
+        width: this.width,
+        height: 54,
+        controlConfig: {
+          showNextButton: true,
+          showMicrophone: true,
+          showVolume: true,
+          showFullScreen: true,
+          showProgressBar: true,
+          showPlayPause: true,
+          showPitchControl: true
+        }
+      });
       container.append(canvas[0]);
       container.append(this.mediaControls.container);
+
       this.mediaControls.getControl('#next-button').on('click', (event) => {
         Tone.Transport.stop();
         this.mediaControls.initTime();
@@ -57,7 +69,6 @@ define(['lib/CDGraphics','components/mediaControls','lib/karaokeLibrary'],
       Tone.Transport.on('start',this.transportPlayHandler.bind(this));
       Tone.Transport.on('pause',this.transportPauseHandler.bind(this));
 
-      this.setDimensions(this.width, this.height);
       this.ctx = canvas[0].getContext('2d');
       this.clearCanvas();
     }
@@ -190,8 +201,7 @@ define(['lib/CDGraphics','components/mediaControls','lib/karaokeLibrary'],
     }
 
     setDimensions(width, height) {
-      var container = $("#" + this.containerID);
-      var canvas = container.find('#canvas');
+      var canvas = $('#canvas');
       canvas.attr('width', width);
       this.mediaControls.setWidth(width);
       canvas.attr('height', height-this.mediaControls.getHeight());

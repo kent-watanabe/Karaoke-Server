@@ -2,12 +2,12 @@ define(['lib/karaokeLibrary', "components/search"], function (helper, Search) {
   return class Queue {
     constructor() {
       var queueElement = $('#queue');
-      var queueToolBar = $("<nav id='queue-search-toolbar' class='navbar navbar-expand-sn navbar-light bg-light'>");
+      var queueToolBar = $("<nav id='queue-search-toolbar' class='navbar navbar-expand-sm navbar-light bg-light'>");
       queueElement.append(queueToolBar);
       var ul = $('<ul class="navbar-nav flex-row">');
-      var searchButton = $('<button class="nav-pills mdi mdi-database-search bg-light" id="addTrack" title="Search">');
-      var joinButton = $('<button class="nav-pills mdi mdi-location-enter bg-light" title="Join another party">');
-      var qrCode = $('<button class="nav-pills mdi mdi-qrcode bg-light" title="Share Link">');
+      var searchButton = $('<button class="nav-pills toolbarButton mdi mdi-database-search bg-light" id="addTrack" title="Search">');
+      var joinButton = $('<button class="nav-pills toolbarButton mdi mdi-location-enter bg-light" title="Join another party">');
+      var qrCode = $('<button class="nav-pills toolbarButton mdi mdi-qrcode bg-light" title="Share Link">');
       queueToolBar.append(ul);
       ul.append(searchButton);
       ul.append(joinButton);

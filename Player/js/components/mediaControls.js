@@ -3,8 +3,6 @@ define(['lib/karaokeLibrary'], (helper) => {
     constructor(props) {
       if (props == null) {
         Object.assign(this, {
-          width: 600,
-          height: 54,
           handlers: {},
           controlConfig: {
             showNextButton: true,
@@ -22,8 +20,9 @@ define(['lib/karaokeLibrary'], (helper) => {
         throw new Error("props is not an object");
       }
 
-      this.container = $('<div class="navbar mediaControls-container" id="mediaControls-container">');
-      this.container.width(this.width);
+      this.container = $('<div class="navbar navbar-expand-sm navbar-light bg-light mediaControls-container" id="mediaControls-container">');
+      this.container.css('width',this.width);
+      this.container.css('height',this.height);
 
       var containerRow = $('<div class="navbar-nav flex-row bg-light">');
       this.container.append(containerRow);
@@ -88,8 +87,7 @@ define(['lib/karaokeLibrary'], (helper) => {
           'mdi-fullscreen-exit');
         fullScreenButton.attr('title', 'Full Screen');
       }
-      this.fireEvent('full_screen_clicked',
-        fullScreenButton.hasClass('mdi-fullscreen-exit'));
+      this.fireEvent('full_screen_clicked',document.fullscreenElement!=null);
     }
 
     toggleMuteButton() {
@@ -172,9 +170,10 @@ define(['lib/karaokeLibrary'], (helper) => {
       return this.container.find(selector);
     }
 
+
     setWidth(width) {
       this.width = width;
-      this.container.width(width);
+      this.container.css('width', width);
     }
 
     getWidth(width) {
@@ -183,7 +182,7 @@ define(['lib/karaokeLibrary'], (helper) => {
 
     setHeight(height) {
       this.height = height;
-      this.container.height(height);
+      this.container.css('height', height);
     }
 
     getHeight(height) {

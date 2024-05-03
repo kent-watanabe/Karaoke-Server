@@ -6,15 +6,43 @@
   <link href="css/bootstrap.css" rel="stylesheet">
   <title>Karaoke Party Login</title>
   <script src="js/lib/bootstrap.js"></script>
+  <script src="js/lib/jquery-3.7.1.js"></script>
   <script src="js/lib/csrf.js"></script>
   <script>
+    function parseURLParams(url) {
+      var searchParams = new URLSearchParams((new URL(url)).search);
+      var params = new Map();
+      for (let pair of searchParams.entries()) {
+        params.set(pair[0], pair[1]);
+      }
+      return params;
+    }
+
     function onLoad() {
       document.querySelector('input[name="_csrf"]').value = csrfToken;
+      var params = parseURLParams(window.location.href);
+      if (params.has('error')) {
+        if($('#error').length > 0) {
+          $('#error').remove();
+        }
+        $('.container').prepend('<div id="error" class="alert alert-danger" role="alert">Invalid username or password</div>');
+        $('#password').focus();
+      }
     }
+
+    function parseURLParams(url) {
+      var searchParams = new URLSearchParams((new URL(url)).search);
+      var params = new Map();
+      for (let pair of searchParams.entries()) {
+        params.set(pair[0], pair[1]);
+      }
+      return params;
+    }
+
   </script>
 </head>
 <body onload="onLoad()">
-  <div class="container" style="margin-top: 20vh; width:30vw">
+  <div class="container" style="margin-top: 20vh; width:60vw">
   <form method="post" action="/login">
     <h2>Please sign in</h2>
     <div class="input-group mb-3">

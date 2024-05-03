@@ -22,7 +22,16 @@ function registerUser() {
       window.location.href = '/login';
     } else {
       resp.text().then(text => {
-        alert(text);
+        if($('#error')) {
+          $('#error').remove();
+        }
+        var error = JSON.parse(text);
+        $('.container').prepend($('<div id="error" class="alert alert-danger" role="alert">').text(error.message));
+        if(error.message.includes('Username')) {
+          var usernameField = $('#username');
+          usernameField.addClass('is-invalid');
+          usernameField.focus();
+        }
       });
     }
   });

@@ -1,21 +1,14 @@
 package com.watanabe.karaokeserver.controller;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonParser.NumberType;
-import com.fasterxml.jackson.core.JsonPointer;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.fasterxml.jackson.databind.node.JsonNodeType;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.watanabe.karaokeserver.data.auth.KaraokeUser;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import java.io.IOException;
+import java.net.http.HttpResponse;
 import java.util.List;
 import org.bson.Document;
+import org.springframework.http.HttpRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContext;
@@ -31,8 +24,15 @@ public class LoginController {
   }
 
   @GetMapping("/logout")
-  public String logout() {
-    return "login.html?logout";
+  public String logout(HttpServletRequest request, HttpServletResponse response) {
+    request.getSession().invalidate();
+    response.addCookie(new Cookie("JSESSIONID", null));
+    return "logout.html";
+  }
+
+  @GetMapping("/logout.done")
+  public String reloadHome() {
+    return "/index.html";
   }
 
   @GetMapping("/whoami")

@@ -48,6 +48,8 @@ header{
 .mediaControls-container
 {
   min-height: 1.7em;
+  width: 100%;
+  height: 54px;
 }
 
 .mediaControls-label
@@ -90,6 +92,11 @@ header{
 {
   font-size: 1em;
   border-radius: 3px;
+}
+
+button:hover.toolbarButton
+{
+  background-color: rgb(200, 200, 200) !important;
 }
 
 .addToQueueButton
@@ -216,4 +223,10 @@ header{
 {
   background-color: lightgrey;
   font-size: .75em;
+}
+
+.time-progress-bar
+{
+  width: 12em;
+  background-color: blue;
 }

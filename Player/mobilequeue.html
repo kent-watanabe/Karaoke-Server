@@ -7,6 +7,8 @@
   <link rel="stylesheet" href="css/jquery-ui.theme.css">
   <link rel="stylesheet" href="css/mobileApp.css">
   <link rel="stylesheet" href="css/tui-grid.css">
+  <link href="css/bootstrap.css" rel="stylesheet">
+  <script src="js/lib/bootstrap.js"></script>
   <script src="js/lib/jquery-3.7.1.js"></script>
   <script src="js/lib/jquery-ui.js"></script>
   <script src="js/lib/tui-grid.js"></script>
@@ -14,6 +16,17 @@
   <script src="js/mobileapp.js"></script>
 </head>
 <body>
-  <div id="queue"></div>
+<header class="navbar navbar-expand navbar-light flex-column flex-md-row bd-navbar">
+  <a class="me-md-2 navbar-brand" href="#">Karaoke Party</a>
+  <ul class="navbar-nav flex-row ml-md-auto d-none d-md-flex nav-auth">
+    <li id="greeting" class="nav-item">
+      <span class="nav-link">Welcome, <span id="username"></span></span>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link mdi mdi-logout" href="/logout"></a>
+    </li>
+  </ul>
+</header>
+<div id="queue"></div>
 </body>
 </html>

@@ -31,7 +31,7 @@ define(['components/karaokePlayer', 'lib/karaokeLibrary', 'components/queue'],
       $('#username').text(currentUser.username);
       karaokePlayer = new KaraokePlayer({
         width: 600,
-        height: 486,
+        height: 540,
         showControls: true
       });
 

@@ -5,7 +5,7 @@ define(['components/VideoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
         if (initProps == null) {
           Object.assign(this, {
             width: 600,
-            height: 400,
+            height: 540,
             showControls: true
           });
         } else if (initProps instanceof Object) {
@@ -28,8 +28,8 @@ define(['components/VideoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
         cdgContainer.on('microphone_clicked', (event, state) =>this.microphoneFn(state));
 
         var playerProps = {
-          width: initProps.width ? initProps.width : 600,
-          height: initProps.height ? initProps.height : 400,
+          width: this.width,
+          height: this.height,
           showControls: true,
           container: videoContainer[0]
         };
@@ -84,8 +84,8 @@ define(['components/VideoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
 
       setDimensions(width, height) {
         var playerContainer = $(this.playerContainer);
-        playerContainer.width(width);
-        playerContainer.height(height);
+        playerContainer.attr('width', width);
+        playerContainer.attr('height',height);
         this.cdgPlayer.setDimensions(width, height);
         this.videoPlayer.setDimensions(width, height);
       }
