@@ -2,6 +2,8 @@ package com.watanabe.karaokeserver.controller;
 
 import static org.springframework.http.HttpStatus.OK;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
@@ -10,7 +12,6 @@ import com.google.zxing.qrcode.QRCodeWriter;
 import com.watanabe.karaokeserver.data.karaoke.MediaFileLocation;
 import com.watanabe.karaokeserver.data.karaoke.MediaFileLocationRepository;
 import com.watanabe.karaokeserver.data.karaoke.MediaType;
-import com.watanabe.karaokeserver.data.karaoke.Message;
 import com.watanabe.karaokeserver.data.karaoke.MessageResponse;
 import com.watanabe.karaokeserver.data.karaoke.MessageType;
 import com.watanabe.karaokeserver.data.karaoke.Queue;
@@ -26,11 +27,13 @@ import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Optional;
 import javax.imageio.ImageIO;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -45,7 +48,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(path = "api/queue")
-@PreAuthorize("hasRole('ROLE_USER')")
 public class QueueController {
 
   private static final String QRURIFormat = "%s://%s:%d/mobilequeue.html?queueId=%s";
@@ -59,9 +61,9 @@ public class QueueController {
   @Autowired
   private KafkaTemplate<Object, Object> template;
 
-
   @PutMapping(value = "/{queueId}/add", consumes = "application/json")
   @ResponseStatus(code = OK)
+  @PreAuthorize("hasRole('ROLE_USER')")
   public void addToQueue(@PathVariable("queueId") String queueId, @RequestBody QueueItem queueItem,
       HttpServletResponse response) throws IOException {
 
@@ -112,6 +114,7 @@ public class QueueController {
 
   @GetMapping(value = "/{queueId}/QRCode", produces = "image/jpeg")
   @ResponseStatus(code = OK)
+  @PreAuthorize("hasRole('ROLE_USER')")
   public void createQueueQRCode(@PathVariable("queueId") String queueId,
       HttpServletRequest request, HttpServletResponse response)
       throws IOException, WriterException, URISyntaxException {
@@ -120,24 +123,30 @@ public class QueueController {
     URI uri = new URI(request.getRequestURL().toString());
     URI linkURI = null;
     if (uri.getHost().equals("localhost")) {
-      String computerName = System.getenv().get("COMPUTERNAME") != null ? System.getenv().get("COMPUTERNAME") :  System.getenv().get("HOSTNAME");
-      if(computerName == null) {
+      String computerName =
+          System.getenv().get("COMPUTERNAME") != null ? System.getenv().get("COMPUTERNAME")
+              : System.getenv().get("HOSTNAME");
+      if (computerName == null) {
         NetworkInterface networkInterface = NetworkInterface.getByInetAddress(
             InetAddress.getLocalHost());
         Enumeration<InetAddress> e = networkInterface.getInetAddresses();
         while (e.hasMoreElements()) {
           InetAddress inetAddress = e.nextElement();
           if (!inetAddress.isLoopbackAddress() || inetAddress.isSiteLocalAddress()) {
-            linkURI = new URI(String.format(QRURIFormat, uri.getScheme(), inetAddress.getHostAddress(), uri.getPort(), queueId));
+            linkURI = new URI(
+                String.format(QRURIFormat, uri.getScheme(), inetAddress.getHostAddress(),
+                    uri.getPort(), queueId));
             break;
           }
         }
-      }
-      else {
-        linkURI = new URI(String.format(QRURIFormat, uri.getScheme(), computerName + ".local", uri.getPort(), queueId));
+      } else {
+        linkURI = new URI(
+            String.format(QRURIFormat, uri.getScheme(), computerName + ".local", uri.getPort(),
+                queueId));
       }
     } else {
-      linkURI = new URI(String.format(QRURIFormat, uri.getScheme(), uri.getHost(), uri.getPort(), queueId));
+      linkURI = new URI(
+          String.format(QRURIFormat, uri.getScheme(), uri.getHost(), uri.getPort(), queueId));
     }
     if (linkURI == null) {
       throw new URISyntaxException("", "Invalid URI");
@@ -151,6 +160,36 @@ public class QueueController {
     OutputStream output = response.getOutputStream();
     ImageIO.write(image, "jpg", output);
     response.flushBuffer();
+  }
+
+  @PutMapping("/")
+  @ResponseStatus(code = OK)
+  @PreAuthorize("hasRole('ROLE_USER')")
+  public ResponseEntity<JsonNode> createQueue(HttpServletRequest request,
+      @RequestBody JsonNode queueInfo) throws IOException {
+    if (queueInfo.get("name") == null || queueInfo.get("name").asText().isEmpty()) {
+      ObjectNode errorNode = JsonUtil.getObjectMapper().createObjectNode();
+      errorNode.put("error", "Queue name is required");
+      return ResponseEntity.badRequest().body(errorNode);
+    }
+
+    queueRepository.findByName(queueInfo.get("name").asText()).ifPresent(queue -> {
+      ObjectNode errorNode = JsonUtil.getObjectMapper().createObjectNode();
+      errorNode.put("error", "Queue name already exists");
+      ResponseEntity.badRequest().body(errorNode);
+    });
+
+    Queue queue = Queue.builder()
+        .name(queueInfo.get("name").asText())
+        .description(
+            queueInfo.get("description") != null ? queueInfo.get("description").asText() : "")
+        .ownerId(request.getUserPrincipal().getName())
+        .queueItems(new ArrayList<>())
+        .build();
+    queue = queueRepository.save(queue);
+    ObjectNode returnNode = queueInfo.deepCopy();
+    returnNode.put("id", queue.get_id());
+    return ResponseEntity.ok(returnNode);
   }
 
 }

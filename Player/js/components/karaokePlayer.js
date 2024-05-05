@@ -1,4 +1,4 @@
-define(['Player/js/components/videoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
+define(['components/videoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
   function (VideoPlayer, CDGPlayer, helper) {
     return class KaraokePlayer {
       constructor(initProps) {

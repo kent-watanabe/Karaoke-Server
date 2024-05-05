@@ -155,6 +155,7 @@ public class AssetController {
   }
 
   @GetMapping("/scan")
+  @PreAuthorize("hasRole('ROLE_ADMIN')")
   public String scanFileSystem() {
     synchronized (logger) {
       String basePathToAssets = karaokeConfiguration.getBasePathToAssets();

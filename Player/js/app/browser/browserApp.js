@@ -28,6 +28,8 @@ function processCorrelation(correlationId) {
 define(['components/karaokePlayer', 'lib/karaokeLibrary', 'components/queue'],
   function (KaraokePlayer, helper, Queue) {
     $(document).ready(function () {
+
+
       $('#username').text(currentUser.username);
       karaokePlayer = new KaraokePlayer({
         width: 600,
@@ -38,7 +40,20 @@ define(['components/karaokePlayer', 'lib/karaokeLibrary', 'components/queue'],
       queue = new Queue();
       myWorker = new Worker("js/karaokews.js");
 
-      $(document).on('queueUpdated', function () {
+      postMessageToWorker(
+        {
+          messageType: 'queueId',
+          queueId: localStorage.getItem('queueId')
+        });
+
+      postMessageToWorker(
+        {
+          messageType: 'QUEUE_REFRESH',
+          dataMimeType: 'application/json',
+          queueId: localStorage.getItem('queueId')
+        });
+
+      queue.addListener('queueUpdated', function () {
         postMessageToWorker(
           {
             messageType: 'queueId',
@@ -46,7 +61,7 @@ define(['components/karaokePlayer', 'lib/karaokeLibrary', 'components/queue'],
           });
       });
 
-      $(document).on('refreshQueue', function () {
+      queue.addListener('refreshQueue', function () {
         postMessageToWorker(
           {
             messageType: 'QUEUE_REFRESH',

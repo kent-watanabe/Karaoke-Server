@@ -94,7 +94,7 @@ header{
   border-radius: 3px;
 }
 
-button:hover.toolbarButton
+:hover.toolbarButton
 {
   background-color: rgb(200, 200, 200) !important;
 }

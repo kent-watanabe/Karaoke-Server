@@ -21,7 +21,7 @@ define(['lib/karaokeLibrary'],function (helper) {
         var containerID = container.attr('id');
         this.containerID = containerID;
 
-        var video = $('<video autoplay id="'+ containerId +'" class="videoContainer">');
+        var video = $('<video autoplay id="'+ containerID +'" class="videoContainer">');
         video.attr("width", this.width)
           .attr("height", this.height);
 

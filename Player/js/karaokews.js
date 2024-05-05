@@ -10,6 +10,10 @@ function ping(retry) {
     if (retry) {
       setTimeout(ping, 2000, true);
     }
+  }).catch(() => {
+    if (retry) {
+      setTimeout(ping, 2000, true);
+    }
   });
 }
 
@@ -25,6 +29,8 @@ function doSend(msg) {
     }
     socket.send(JSON.stringify(msg));
     console.log("Sent message: " + msg.messageType);
+  }).catch(() => {
+    setTimeout(()=>doSend(msg), 2000, true);
   });
 }
 
@@ -36,6 +42,13 @@ function checkSocket() {
 
 function doCheck(resolve, reject) {
   if (!socket || socket.readyState === WebSocket.CLOSED || socket.readyState === WebSocket.CLOSING) {
+    if(queueId === null)
+    {
+      console.error("No queueId set");
+      reject();
+      return;
+    }
+
     if(this.location.protocol === "https:")
     {
       socket = new WebSocket("wss://"+this.location.host+"/karaoke?queueId=" + queueId);

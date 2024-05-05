@@ -1,4 +1,4 @@
-define(['lib/karaokeLibrary', "components/search", "components/joinParty"], function (helper, Search,JoinParty) {
+define(['lib/karaokeLibrary', "components/search", "components/joinParty","components/newParty"], function (helper, Search,JoinPartyDlg,NewPartyDlg) {
   return class Queue {
     constructor() {
       var queueElement = $('#queue');
@@ -6,11 +6,19 @@ define(['lib/karaokeLibrary', "components/search", "components/joinParty"], func
       queueElement.append(queueToolBar);
       var ul = $('<ul class="navbar-nav flex-row">');
       var searchButton = $('<button class="nav-pills toolbarButton mdi mdi-database-search bg-light" id="addTrack" title="Search">');
-      var joinButton = $('<button class="nav-pills toolbarButton mdi mdi-location-enter bg-light" title="Join another party">');
+      var partyButton = $('<li class="nav-item dropdown">');
+      var partyButtonLink = $('<a class="nav-item dropdown-toggle toolbarButton mdi mdi-party-popper" style="color:black !important" title="Party Actions" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">');
+      var partyButtonMenu = $('<ul class="dropdown-menu" aria-labelledby="partyActions">');
+      var joinPartyButton = $('<li><a class="dropdown-item" href="#">Join Party</a></li>');
+      var newPartyButton = $('<li><a class="dropdown-item" href="#">Create New Party</a></li>');
+      partyButton.append(partyButtonLink);
+      partyButton.append(partyButtonMenu);
+      partyButtonMenu.append(joinPartyButton);
+      partyButtonMenu.append(newPartyButton);
       var qrCode = $('<button class="nav-pills toolbarButton mdi mdi-qrcode bg-light" title="Share Link">');
       queueToolBar.append(ul);
       ul.append(searchButton);
-      ul.append(joinButton);
+      ul.append(partyButton);
       ul.append(qrCode);
 
       tui.Grid.applyTheme('striped');
@@ -25,22 +33,16 @@ define(['lib/karaokeLibrary', "components/search", "components/joinParty"], func
         ]
       });
       searchButton.on('click', this.displaySearch.bind(this));
-      joinButton.on('click', this.joinParty.bind(this));
+      joinPartyButton.on('click', this.joinParty.bind(this));
+      newPartyButton.on('click', this.createParty.bind(this));
       qrCode.on('click', this.createQRCode.bind(this));
       if (!localStorage.getItem('queueId')) {
         var params = helper.parseURLParams(location.href);
         if (params.get('queueId')) {
           localStorage.setItem('queueId', params.get('queueId'));
-          this.fireEvent('queueUpdated');
-          this.fireEvent('refreshQueue');
         } else {
           this.joinParty();
         }
-      }
-      else
-      {
-        this.fireEvent('queueUpdated');
-        this.fireEvent('refreshQueue');
       }
     }
 
@@ -165,8 +167,13 @@ define(['lib/karaokeLibrary', "components/search", "components/joinParty"], func
     }
 
     joinParty() {
-      var joinParty = new JoinParty();
+      var joinParty = new JoinPartyDlg();
       joinParty.open();
+    }
+
+    createParty() {
+      var newParty = new NewPartyDlg();
+      newParty.open();
     }
 
     addTrack(event, dataToSend) {

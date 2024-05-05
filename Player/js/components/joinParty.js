@@ -15,13 +15,30 @@ define(['lib/karaokeLibrary'], function(helper){
          div.remove();
        },
        buttons: {
-         Join: this.joinParty.bind(this)
-       }
+         Join: this.joinParty.bind(this),
+         Cancel: this.handleCancel.bind(this)
+        }
      });
      div.parent().find('.ui-dialog-buttonset button').addClass('btn btn-primary');
      div.parent().find('.ui-dialog-titlebar button').addClass('ui-button ui-icon ui-icon-closethick');
      this.div = div;
 
+   }
+
+   handleCancel()
+   {
+     if(localStorage.getItem('queueId') == null)
+     {
+       if(!$('#queueId').hasClass('is-invalid')) {
+         $('#queueId').addClass('is-invalid');
+       }
+       if(this.div.find('.invalid-feedback').length == 0)
+       {
+         this.div.append("<div class='invalid-feedback'>You must join a party!</div>");
+       }
+       return;
+     }
+     this.div.dialog('close');
    }
 
    joinParty() {
@@ -37,8 +54,8 @@ define(['lib/karaokeLibrary'], function(helper){
        return;
      }
      localStorage.setItem('queueId', queueId);
-     div.trigger('queueUpdated');
-     div.trigger('refreshQueue');
+     this.div.trigger('queueUpdated');
+     this.div.trigger('refreshQueue');
      this.div.dialog('close');
    }
 
