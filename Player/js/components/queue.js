@@ -1,4 +1,4 @@
-define(['lib/karaokeLibrary', "components/search"], function (helper, Search) {
+define(['lib/karaokeLibrary', "components/search", "components/joinParty"], function (helper, Search,JoinParty) {
   return class Queue {
     constructor() {
       var queueElement = $('#queue');
@@ -31,9 +31,16 @@ define(['lib/karaokeLibrary', "components/search"], function (helper, Search) {
         var params = helper.parseURLParams(location.href);
         if (params.get('queueId')) {
           localStorage.setItem('queueId', params.get('queueId'));
+          this.fireEvent('queueUpdated');
+          this.fireEvent('refreshQueue');
         } else {
           this.joinParty();
         }
+      }
+      else
+      {
+        this.fireEvent('queueUpdated');
+        this.fireEvent('refreshQueue');
       }
     }
 
@@ -158,32 +165,8 @@ define(['lib/karaokeLibrary', "components/search"], function (helper, Search) {
     }
 
     joinParty() {
-      var joinContainer = helper.createDOMObject('<div>', 'join-container',"join-container");
-      var queueIdLabel = helper.createDOMObject(
-        '<label htmlFor="queueId" class="inputLabel">Queue ID</label>');
-      var queueIdInput = helper.createDOMObject(' <input type="text"/>',
-        'queueId', 'queueIdBox');
-      var joinButton = helper.createDOMObject(
-        '<button class="mdiButton mdi-location-enter" title="Join">');
-      joinButton.css('margin-left', '1em');
-      joinButton.on('click', function () {
-        localStorage.setItem('queueId', queueIdInput.val());
-        joinContainer.dialog('close');
-      });
-      joinContainer.append(queueIdLabel);
-      joinContainer.append(queueIdInput);
-      joinContainer.append(joinButton);
-      joinContainer.dialog({
-        autoOpen: true,
-        modal: true,
-        resizable: false,
-        closeOnEscape: false,
-        title: 'Join Party',
-        close: function (event, ui) {
-          joinContainer.dialog('destroy');
-          joinContainer.remove();
-        }
-      });
+      var joinParty = new JoinParty();
+      joinParty.open();
     }
 
     addTrack(event, dataToSend) {

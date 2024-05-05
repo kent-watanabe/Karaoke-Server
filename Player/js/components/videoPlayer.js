@@ -4,7 +4,7 @@ define(['lib/karaokeLibrary'],function (helper) {
         if (props == null) {
           Object.assign(this, {
             width: 600,
-            height: 400,
+            height: 550,
             showControls: true
           });
         } else if (props instanceof Object) {
@@ -20,18 +20,16 @@ define(['lib/karaokeLibrary'],function (helper) {
         var container = $(this.container);
         var containerID = container.attr('id');
         this.containerID = containerID;
-        this.getID = helper.getID.bind(this);
 
-        var video = helper.createDOMObject('<video autoplay>', containerID + "-video", "video");
-        video.attr("id", container.attr('id') + "-player")
-          .attr("width", this.width)
+        var video = $('<video autoplay id="'+ containerId +'" class="videoContainer">');
+        video.attr("width", this.width)
           .attr("height", this.height);
 
         if (this.showControls) {
           video.attr('controls', '');
         }
 
-        container.append(video[0]);
+        container.append(video);
       }
 
       fireEvent(event) {

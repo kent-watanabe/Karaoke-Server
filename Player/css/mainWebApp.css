@@ -230,3 +230,7 @@ button:hover.toolbarButton
   width: 12em;
   background-color: blue;
 }
+
+.no-close .ui-dialog-titlebar-close {
+  display: none;
+}

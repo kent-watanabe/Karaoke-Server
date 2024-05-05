@@ -1,4 +1,4 @@
-define(['components/VideoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
+define(['Player/js/components/videoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
   function (VideoPlayer, CDGPlayer, helper) {
     return class KaraokePlayer {
       constructor(initProps) {
@@ -18,24 +18,22 @@ define(['components/VideoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
         playerContainer.width(this.width);
         playerContainer.height(this.height);
 
-        this.playerContainer = playerContainer[0];
-        var videoContainer = helper.createDOMObject('<div>', 'video-container',
-          'videoContainer');
-        playerContainer.append(videoContainer[0]);
-        var cdgContainer = helper.createDOMObject('<div>', 'cdg-container',
-          'cdgContainer');
-        playerContainer.append(cdgContainer[0]);
+        this.playerContainer = playerContainer;
+        var videoContainer = $('<div id="video-container" class="videoContainer">');
+        playerContainer.append(videoContainer);
+        var cdgContainer = $('<div id="cdg-container" class="cdgContainer">');
+        playerContainer.append(cdgContainer);
         cdgContainer.on('microphone_clicked', (event, state) =>this.microphoneFn(state));
 
         var playerProps = {
           width: this.width,
           height: this.height,
           showControls: true,
-          container: videoContainer[0]
+          container: videoContainer
         };
 
         this.videoPlayer = new VideoPlayer(playerProps);
-        playerProps.container = cdgContainer[0];
+        playerProps.container = cdgContainer;
         this.cdgPlayer = new CDGPlayer(playerProps);
         videoContainer.css('display', 'none');
 

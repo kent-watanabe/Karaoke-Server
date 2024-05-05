@@ -5,7 +5,6 @@ import static jakarta.servlet.DispatcherType.FORWARD;
 
 import com.watanabe.karaokeserver.data.auth.CustomAuthenticationProvider;
 import com.watanabe.karaokeserver.data.auth.KaraokeUserRepository;
-import com.watanabe.karaokeserver.util.JsonUtil;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -13,19 +12,14 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.function.Supplier;
-import net.minidev.json.JSONUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configurers.DefaultLoginPageConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfToken;
@@ -50,8 +44,10 @@ public class WebSecurityConfig {
   private CustomAuthenticationProvider authProvider;
 
   private static final class CsrfCookieFilter extends OncePerRequestFilter {
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
+        FilterChain filterChain)
         throws ServletException, IOException {
       CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
       // Render the token value to a cookie by causing the deferred token to be loaded
@@ -101,15 +97,16 @@ public class WebSecurityConfig {
                 .requestMatchers(
                     new AntPathRequestMatcher("/newUser.html"),
                     new AntPathRequestMatcher("/js/app/registerUser.js"),
+                    new AntPathRequestMatcher("/images/*"),
                     new AntPathRequestMatcher("/css/*"),
                     new AntPathRequestMatcher("/js/lib/*"),
                     new AntPathRequestMatcher("/api/user"))
                 .permitAll()
                 .anyRequest()
                 .authenticated()
-                )
+        )
         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-        .csrf(c->c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+        .csrf(c -> c.csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
             .csrfTokenRequestHandler(requestHandler))
         .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class)
         //.formLogin(Customizer.withDefaults());

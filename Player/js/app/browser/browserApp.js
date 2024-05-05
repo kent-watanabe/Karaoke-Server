@@ -37,18 +37,23 @@ define(['components/karaokePlayer', 'lib/karaokeLibrary', 'components/queue'],
 
       queue = new Queue();
       myWorker = new Worker("js/karaokews.js");
-      postMessageToWorker(
-        {
-          messageType: 'queueId',
-          queueId: localStorage.getItem('queueId')
-        });
 
-      postMessageToWorker(
-        {
-          messageType: 'QUEUE_REFRESH',
-          dataMimeType: 'application/json',
-          queueId: localStorage.getItem('queueId')
-        });
+      $(document).on('queueUpdated', function () {
+        postMessageToWorker(
+          {
+            messageType: 'queueId',
+            queueId: localStorage.getItem('queueId')
+          });
+      });
+
+      $(document).on('refreshQueue', function () {
+        postMessageToWorker(
+          {
+            messageType: 'QUEUE_REFRESH',
+            dataMimeType: 'application/json',
+            queueId: localStorage.getItem('queueId')
+          });
+      });
       queue.addListener('stop', (event) => karaokePlayer.stop());
       karaokePlayer.addListener('TrackEnded',(event,id) => queue.trackEnded());
       karaokePlayer.addListener('TrackStarted',(event,id) => queue.trackStarted(id));

@@ -19,7 +19,7 @@ define(['lib/CDGraphics','components/mediaControls','lib/karaokeLibrary'],
       }
 
       this.logo = new Image();
-      this.logo.src = "/img/logo.png";
+      this.logo.src = "/images/logo.png";
 
       var container = $(this.container);
       this.containerID = container.attr('id');
