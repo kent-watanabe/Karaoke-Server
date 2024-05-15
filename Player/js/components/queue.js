@@ -152,7 +152,7 @@ define(['lib/karaokeLibrary', "components/search", "components/joinParty","compo
 
     removeItemFromQueue(data) {
       this.queue.getData().forEach(function (item, index) {
-        if (item.id === data.id) {
+        if (item.internalQueueItemId === data.internalQueueItemId) {
           this.queue.removeRow(item.rowKey);
         }
       }.bind(this));

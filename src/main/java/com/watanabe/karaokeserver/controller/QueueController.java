@@ -30,6 +30,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Optional;
+import java.util.UUID;
 import javax.imageio.ImageIO;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,6 +100,9 @@ public class QueueController {
         queueItem.setType(MediaType.MP4.toString());
       }
     }
+
+    //Let's give the queueItem a unique id relative to queue
+    queueItem.setInternalQueueItemId(UUID.randomUUID());
     queue.addQueueItem(queueItem);
     queueRepository.save(queue);
 
