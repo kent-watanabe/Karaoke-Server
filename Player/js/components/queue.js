@@ -167,8 +167,7 @@ define(['lib/karaokeLibrary', "components/search", "components/joinParty","compo
     }
 
     joinParty() {
-      var joinParty = new JoinPartyDlg();
-      joinParty.open();
+      new JoinPartyDlg();
     }
 
     createParty() {

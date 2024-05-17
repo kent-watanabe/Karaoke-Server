@@ -3,6 +3,7 @@ package com.watanabe.karaokeserver.controller;
 import static org.springframework.http.HttpStatus.OK;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
@@ -29,9 +30,11 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import javax.imageio.ImageIO;
+import org.apache.kafka.common.protocol.types.Field.Str;
 import org.bson.types.ObjectId;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -39,6 +42,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -194,6 +198,26 @@ public class QueueController {
     ObjectNode returnNode = queueInfo.deepCopy();
     returnNode.put("id", queue.get_id());
     return ResponseEntity.ok(returnNode);
+  }
+
+  @GetMapping("/")
+  @ResponseStatus(code = OK)
+  @PreAuthorize("hasRole('ROLE_USER')")
+  public ResponseEntity<JsonNode> getQueues() {
+    List<Queue> queues = queueRepository.findByOwnerId(SecurityContextHolder.getContext().getAuthentication().getName());
+    ArrayNode returnNode = JsonUtil.getObjectMapper().createArrayNode();
+    queues.forEach(queue -> {
+      ObjectNode queueNode = JsonUtil.getObjectMapper().convertValue(queue, ObjectNode.class);
+      returnNode.add(queueNode);
+    });
+    return ResponseEntity.ok(returnNode);
+  }
+
+  @DeleteMapping("/{queueId}")
+  @ResponseStatus(code = OK)
+  @PreAuthorize("hasRole('ROLE_USER')")
+  public void deleteQueues(@PathVariable("queueId") String queueId) {
+    queueRepository.deleteById(new ObjectId(queueId));
   }
 
 }
