@@ -38,6 +38,11 @@ define(['lib/karaokeLibrary'], function (helper) {
       artistDiv.html('<label htmlFor="searchType" class="form-check-label">Artist</label><input type="radio" name="searchType" value="artist" class="form-check-input" checked>');
       var singerInput = $('<input type="text" id="singer" class="form-control m-2" style="width:10em;"/>');
       var searchButton = $('<button class="btn btn-primary mdi mdi-database-search" title="Search" id="doSearchBtn">');
+      if(currentUser)
+      {
+        singerInput.val(currentUser.username);
+      }
+
       searchToolBar.append(searchInput);
       searchTypeDiv.append(artistDiv);
       searchTypeDiv.append(titleDiv);

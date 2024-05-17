@@ -13,6 +13,14 @@ header{
   background-color: #0d6efd;
 }
 
+.ui-dialog-titlebar-close::before {
+  content: "\F0156";
+  font: bold normal normal 24px/1 "Material Design Icons";
+  font-size: inherit;
+  vertical-align: top;
+}
+
+
 .nav-link
 {
   color: white !important;
