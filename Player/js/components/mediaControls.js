@@ -20,57 +20,78 @@ define(['lib/karaokeLibrary'], (helper) => {
         throw new Error("props is not an object");
       }
 
-      this.container = $('<div class="navbar navbar-expand-sm navbar-light bg-light mediaControls-container" id="mediaControls-container">');
-      this.container.css('width',this.width);
-      this.container.css('height',this.height);
+      this.container = $(
+        '<div class="navbar navbar-expand-sm navbar-light bg-light mediaControls-container" id="mediaControls-container">');
+      this.container.css('width', this.width);
+      this.container.css('height', this.height);
 
       var containerRow = $('<div class="navbar-nav flex-row bg-light">');
       this.container.append(containerRow);
 
       if (this.controlConfig.showPlayPause) {
-        var playButton = $('<button class="nav-pills mdi toolbarButton mdi-play bg-light" title="Pause" id="play-button">');
+        var playButton = $(
+          '<button class="nav-pills mdi toolbarButton mdi-play bg-light" title="Pause" id="play-button">');
         playButton.on('click', (event) => {
           this.togglePlay()
         });
         containerRow.append(playButton);
       }
       if (this.controlConfig.showNextButton) {
-        containerRow.append($('<button class="nav-pills mdi toolbarButton mdi-skip-next bg-light" title="Next Track" id="next-button">'));
+        containerRow.append(
+          $('<button class="nav-pills mdi toolbarButton mdi-skip-next bg-light" title="Next Track" id="next-button">'));
       }
       if (this.controlConfig.showProgressBar) {
         var progressContainer = $('<div style="display:inline-grid">');
-        progressContainer.append($('<progress value="0" class="time-progress-bar" id="time-progress-bar">'));
-        progressContainer.append($('<label id="timeLabel" for="time-progress-bar" class="mediaControls-label""></label>'));
+        progressContainer.append(
+          $('<progress value="0" class="time-progress-bar" id="time-progress-bar">'));
+        progressContainer.append(
+          $('<label id="timeLabel" for="time-progress-bar" class="mediaControls-label""></label>'));
         containerRow.append(progressContainer);
         this.initTime(new Date(0));
       }
       if (this.controlConfig.showPitchControl) {
         var pitchContainer = $('<div style="display:inline-grid">');
-        var pitchRange = $('<input type="range" min="-6" max="6" value="0" class="pitch-slider" id="pitch-slider">');
+        var pitchRange = $(
+          '<input type="range" min="-6" max="6" value="0" class="pitch-slider" id="pitch-slider">');
         pitchRange.on('change', (event) => this.setPitch(event.target.value));
         pitchContainer.append(pitchRange);
-        pitchContainer.append($('<label id="pitchLabel" for=pitch-slider" class="mdiButton toolbarButton mediaControls-label"></label>'));
+        pitchContainer.append(
+          $('<label id="pitchLabel" for=pitch-slider" class="mdiButton toolbarButton mediaControls-label"></label>'));
         containerRow.append(pitchContainer);
         this.setPitch(0);
       }
       if (this.controlConfig.showVolume) {
         var volumeContainer = $('<div style="display:inline-grid">');
-        var volumeSlider = $('<input type="range" min="-10" max="10" value="0" id="volume-slider" class="volume-slider">');
+        var volumeSlider = $(
+          '<input type="range" min="-51" max="1" value="-10" id="volume-slider" class="volume-slider">');
         volumeSlider.on('change',
-          (event) => this.setVolume(event.target.value));
+          (event) => {
+            var muteButton = this.getControl('#muteButton');
+            if (event.target.value <= -50) {
+              muteButton.addClass('mdi-volume-off').removeClass(
+                'mdi-volume-high');
+            } else {
+              muteButton.addClass('mdi-volume-high').removeClass(
+                'mdi-volume-off');
+            }
+            this.setVolume(event.target.value);
+          });
         volumeContainer.append(volumeSlider);
-        var muteButton = $('<button class="mdi toolbarButton mdi-volume-high bg-light" title="Mute" id="muteButton">');
+        var muteButton = $(
+          '<button class="mdi toolbarButton mdi-volume-high bg-light" title="Mute" id="muteButton">');
         muteButton.on('click', (event) => this.toggleMuteButton());
         volumeContainer.append(muteButton);
         containerRow.append(volumeContainer);
       }
       if (this.controlConfig.showMicrophone) {
-        var microphone = $('<button class="mdi toolbarButton mdi-microphone bg-light" title="Microphone" id="microphone">');
+        var microphone = $(
+          '<button class="mdi toolbarButton mdi-microphone bg-light" title="Microphone" id="microphone">');
         microphone.on('click', (event) => this.toggleMicrophone());
         containerRow.append(microphone);
       }
       if (this.controlConfig.showFullScreen) {
-        var fullScreenButton = $('<button class="mdi toolbarButton mdi-fullscreen bg-light" title="Full Screen" id="full-screen">');
+        var fullScreenButton = $(
+          '<button class="mdi toolbarButton mdi-fullscreen bg-light" title="Full Screen" id="full-screen">');
         fullScreenButton.on('click', (event) => this.toggleFullScreen());
         containerRow.append(fullScreenButton);
       }
@@ -87,7 +108,7 @@ define(['lib/karaokeLibrary'], (helper) => {
           'mdi-fullscreen-exit');
         fullScreenButton.attr('title', 'Full Screen');
       }
-      this.fireEvent('full_screen_clicked',document.fullscreenElement!=null);
+      this.fireEvent('full_screen_clicked', document.fullscreenElement != null);
     }
 
     toggleMuteButton() {
@@ -169,7 +190,6 @@ define(['lib/karaokeLibrary'], (helper) => {
     getControl(selector) {
       return this.container.find(selector);
     }
-
 
     setWidth(width) {
       this.width = width;

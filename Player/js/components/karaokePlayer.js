@@ -36,7 +36,7 @@ define(['components/videoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
         playerProps.container = cdgContainer;
         this.cdgPlayer = new CDGPlayer(playerProps);
         videoContainer.css('display', 'none');
-
+        this.setActivePlayer(this.cdgPlayer);
         this.meter = new Tone.Meter();
         this.mic = new Tone.UserMedia().connect(this.meter).toDestination();
         this.mic.open().then(() => {
@@ -47,6 +47,25 @@ define(['components/videoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
           console.log("mic not open");
         });
         Tone.start();
+      }
+
+      setActivePlayer(player) {
+        this.activePlayer = player;
+        if(this.activePlayer === this.videoPlayer)
+        {
+          this.showVideoPlayer();
+        }
+        else
+        {
+          this.showCDGPlayer();
+        }
+      }
+
+      notifyTrackAdded(track) {
+        if(this.activePlayer.getPlayerState()==='stopped')
+        {
+          this.playTrack(track);
+        }
       }
 
       microphoneFn(state) {
@@ -74,54 +93,35 @@ define(['components/videoPlayer', 'components/CDGPlayer','lib/karaokeLibrary'],
         playerContainer.children('#video-container').css('display', 'none');
       }
 
-      hidePlayers() {
-        var playerContainer = $(this.playerContainer);
-        playerContainer.children('#cdg-container').css('display', 'none');
-        playerContainer.children('#video-container').css('display', 'none');
-      }
-
       setDimensions(width, height) {
-        var playerContainer = $(this.playerContainer);
         playerContainer.attr('width', width);
         playerContainer.attr('height',height);
-        this.cdgPlayer.setDimensions(width, height);
-        this.videoPlayer.setDimensions(width, height);
+        this.activePlayer.setDimensions(width, height);
       }
 
       playTrack(queueItem) {
         if (queueItem.type === 'MP4') {
-          this.showVideoPlayer();
-          this.videoPlayer.play(queueItem.id);
-          this.playing = {video: true, cdg: false};
+          this.setActivePlayer(this.videoPlayer);
         } else if (queueItem.type === 'CDG') {
-          this.showCDGPlayer();
-          this.cdgPlayer.play(queueItem.id);
-          this.playing = {video: false, cdg: true};
+          this.setActivePlayer(this.cdgPlayer);
         }
+        this.activePlayer.play(queueItem.id);
       }
 
       stop() {
-        if (this.playing.video) {
-          this.videoPlayer.stop();
-        } else {
-          this.cdgPlayer.stop();
-        }
+        this.activePlayer.stop();
+      }
+
+      getState() {
+        return this.activePlayer.getPlayerState();
       }
 
       setVolume(volume) {
-        if (this.playing.video) {
-          return this.videoPlayer.setVolume(volume);
-        } else if (this.playing.cdg) {
-          return this.cdgPlayer.setVolume(volume);
-        }
+        this.activePlayer.setVolume(volume);
       }
 
       getVolume() {
-        if (this.playing.video) {
-          return this.videoPlayer.getVolume();
-        } else if (this.playing.cdg) {
-          return this.cdgPlayer.getVolume();
-        }
+        this.activePlayer.getVolume(volume);
       }
 
     }

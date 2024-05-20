@@ -81,7 +81,12 @@ define(['components/karaokePlayer', 'lib/karaokeLibrary', 'components/queue'],
             var queueItems = JSON.parse(message.data).queueItems;
             queue.setData(queueItems);
           } else if (message.messageType === "TRACK_ADDED") {
-            queue.handleTrackAdded(JSON.parse(message.data));
+            var track = JSON.parse(message.data);
+            queue.handleTrackAdded(track);
+            if(karaokePlayer.getState() == 'stopped')
+            {
+              karaokePlayer.playTrack(track);
+            }
           } else if (["TRACK_REMOVED", "TRACK_PLAYED"].includes(message.messageType)) {
             var track = JSON.parse(message.data);
             queue.handleTrackPlayed(track);

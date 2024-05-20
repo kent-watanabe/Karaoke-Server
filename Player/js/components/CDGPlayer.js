@@ -64,7 +64,7 @@ define(['lib/CDGraphics','components/mediaControls','lib/karaokeLibrary'],
       container.on('dblclick', (e) => this.handleDoubleClick(e));
 
       this.frameId = 0;
-      this.mediaControls.setVolume(Tone.Destination.volume.value);
+      this.mediaControls.setVolume(-10);
 
       Tone.Transport.on('start',this.transportPlayHandler.bind(this));
       Tone.Transport.on('pause',this.transportPauseHandler.bind(this));
@@ -117,6 +117,10 @@ define(['lib/CDGraphics','components/mediaControls','lib/karaokeLibrary'],
       else {
         Tone.Transport.pause();
       }
+    }
+
+    getPlayerState() {
+      return this.player.state;
     }
 
     fireEvent(event) {
@@ -179,12 +183,12 @@ define(['lib/CDGraphics','components/mediaControls','lib/karaokeLibrary'],
       .then(response => response.arrayBuffer())
       .then(buffer => {
         this.cdGraphics.load(buffer);
-        this.player.load("/api/assets/id/" + id + ".mp3",).then(()=>{
-          this.mediaControls.initTime(new Date(this.player.buffer.duration*1000));
-          this.player.sync().start();
-          this.fireEvent('TrackStarted',id);
-          Tone.Transport.start();
-        });
+      });
+      this.player.load("/api/assets/id/" + id + ".mp3",).then(()=>{
+        this.mediaControls.initTime(new Date(this.player.buffer.duration*1000));
+        this.player.sync().start();
+        this.fireEvent('TrackStarted',id);
+        Tone.Transport.start();
       });
     }
 

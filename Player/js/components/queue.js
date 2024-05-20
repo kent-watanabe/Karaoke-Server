@@ -95,6 +95,9 @@ define(['lib/karaokeLibrary', "components/search", "components/joinParty","compo
     }
 
     sendPlayTrackMessage(queueItem) {
+      if(!queueItem) {
+        queueItem = this.queue.getRowAt(0);
+      }
       console.debug(JSON.stringify(queueItem));
 
       postMessageToWorker(
