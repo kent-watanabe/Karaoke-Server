@@ -4,8 +4,7 @@ define(['lib/karaokeLibrary'],function (helper) {
         if (props == null) {
           Object.assign(this, {
             width: 600,
-            height: 550,
-            showControls: true
+            height: 540
           });
         } else if (props instanceof Object) {
           Object.assign(this, props);
@@ -24,12 +23,46 @@ define(['lib/karaokeLibrary'],function (helper) {
         var video = $('<video autoplay id="'+ containerID +'" class="videoContainer">');
         video.attr("width", this.width)
           .attr("height", this.height);
-
-        if (this.showControls) {
-          video.attr('controls', '');
-        }
-
+        video.attr('controls', '');
+        this.video = video;
+        this.mediaControls = new MediaControls({
+          width: this.width,
+          height: 54,
+          controlConfig: {
+            showNextButton: true,
+            showMicrophone: true,
+            showVolume: true,
+            showFullScreen: true,
+            showProgressBar: true,
+            showPlayPause: true,
+            showPitchControl: false
+          }
+        });
         container.append(video);
+        container.append(this.mediaControls.container);
+
+        this.mediaControls.getControl('#next-button').on('click', (event) => {
+          video.pause();
+          this.mediaControls.initTime();
+          this.fireEvent('nextTrack');
+        });
+
+        this.mediaControls.container.on('volume_changed', (e, volume)=>{video.volume.value = volume;});
+        this.mediaControls.container.on('play_clicked', (event, state)=>this.handlePlayPause(state));
+        this.mediaControls.container.on('mute_clicked', (event, state)=>this.handleMute(state));
+        container.on('full_screen_clicked', (event, state) => this.handleFullScreen(state));
+        container.on('fullscreenchange', (e) => this.handleFullScreenChange(e));
+        container.on('dblclick', (e) => this.handleDoubleClick(e));
+
+      }
+
+      handlePlayPause(state) {
+        if(state === 'play') {
+          this.getVideo(true).play();
+        }
+        else {
+          this.getVideo(true).pause();
+        }
       }
 
       fireEvent(event) {
@@ -49,12 +82,11 @@ define(['lib/karaokeLibrary'],function (helper) {
 
       getVideo(returnEl)
       {
-        var container = $(this.container);
-        if(!returnEl) {
-          return container.find('video');
+       if(!returnEl) {
+          return this.video.find('video');
         }
         else {
-          return container.find('video')[0];
+          return this.video.find('video')[0];
         }
       }
 
